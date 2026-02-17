@@ -2,557 +2,474 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>暗算パネル</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@400;700;900&display=swap');
-
-  :root {
-    --bg:#e8f4ff;--bg2:#d4ecff;
-    --p-red:#ff5577;--p-blue:#44aaff;--p-green:#44dd77;
-    --p-yellow:#ffcc22;--p-purple:#aa66ff;--p-orange:#ff8844;
-    --txt:#334;--txt-w:#fff;--dim:#7788aa;
-    --danger:#ff3355;--ok:#22cc66;
-    --card-bg:rgba(255,255,255,.85);
-    --bottom-bg:rgba(255,255,255,.92);
-  }
-  *{margin:0;padding:0;box-sizing:border-box;}
-  body{
-    font-family:'Zen Maru Gothic',sans-serif;background:var(--bg);color:var(--txt);
-    min-height:100vh;overflow:hidden;user-select:none;-webkit-user-select:none;
-    touch-action:manipulation;
-  }
-
-  /* ===== FLOATING BUBBLES (global) ===== */
-  .bubbles{position:fixed;inset:0;pointer-events:none;z-index:999;overflow:hidden;}
-  .bubble{
-    position:absolute;border-radius:50%;
-    opacity:.3;
-    animation:floatUp linear infinite;
-  }
-  @keyframes floatUp{
-    0%{transform:translateY(100vh) scale(.3);opacity:0;}
-    10%{opacity:.3;}
-    90%{opacity:.25;}
-    100%{transform:translateY(-10vh) scale(1);opacity:0;}
-  }
-
-  .screen{display:none;height:100vh;width:100vw;position:absolute;top:0;left:0;}
-  .screen.active{display:flex;flex-direction:column;align-items:center;}
-
-  /* ===== TITLE ===== */
-  #title{
-    justify-content:center;gap:24px;
-    background:linear-gradient(180deg,#d4ecff,#e8f4ff,#f0e8ff);
-    position:relative;overflow:hidden;
-  }
-
-  .logo{
-    font-family:'Dela Gothic One',sans-serif;font-size:clamp(40px,10vw,80px);
-    text-align:center;z-index:2;line-height:1.2;
-  }
-  .logo span{display:inline-block;filter:drop-shadow(0 3px 0 rgba(0,0,0,.1));}
-  .logo .l1{color:var(--p-red);}
-  .logo .l2{color:var(--p-yellow);}
-  .logo .l3{color:var(--p-green);}
-  .logo .l4{color:var(--p-blue);}
-  .logo .l5{color:var(--p-purple);}
-
-  .title-sub{font-size:clamp(12px,3vw,16px);color:var(--dim);z-index:2;text-align:center;letter-spacing:2px;}
-
-  .btn{font-family:'Zen Maru Gothic',sans-serif;font-weight:900;border:none;border-radius:12px;cursor:pointer;transition:all .12s;letter-spacing:1px;}
-  .btn:active{transform:scale(.94);}
-
-  .btn-start{
-    font-size:22px;padding:16px 52px;z-index:2;
-    background:linear-gradient(180deg,#ff7799,#ff5577);
-    color:#fff;border-radius:50px;
-    box-shadow:0 4px 0 #cc3355,0 8px 24px rgba(255,85,119,.25);
-    text-shadow:0 1px 2px rgba(0,0,0,.15);
-  }
-  .btn-start:active{box-shadow:0 2px 0 #cc3355;transform:translateY(2px) scale(.98);}
-
-  /* ===== MAP ===== */
-  #map{
-    padding:20px;gap:16px;overflow-y:auto;
-    background:linear-gradient(180deg,#d4ecff,var(--bg));
-  }
-  .mt{font-family:'Dela Gothic One',sans-serif;font-size:clamp(20px,5vw,30px);color:var(--p-blue);}
-  .ts{font-size:15px;color:var(--dim);}
-  .ts .si{color:var(--p-yellow);font-size:18px;}
-  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;width:100%;max-width:860px;}
-
-  .cd{
-    background:var(--card-bg);backdrop-filter:blur(8px);
-    border-radius:18px;padding:20px;cursor:pointer;transition:all .2s;
-    border:2px solid rgba(0,0,0,.06);position:relative;overflow:hidden;
-    box-shadow:0 2px 12px rgba(0,0,0,.06);
-  }
-  .cd::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;border-radius:18px 18px 0 0;}
-  .cd[data-i="0"]::before{background:var(--p-red);}.cd[data-i="1"]::before{background:var(--p-orange);}
-  .cd[data-i="2"]::before{background:var(--p-green);}.cd[data-i="3"]::before{background:var(--p-blue);}
-  .cd[data-i="4"]::before{background:var(--p-purple);}
-  .cd:active{transform:scale(.97);}
-  .cd[data-i="0"]:hover{border-color:var(--p-red);box-shadow:0 4px 20px rgba(255,85,119,.15);}
-  .cd[data-i="1"]:hover{border-color:var(--p-orange);box-shadow:0 4px 20px rgba(255,136,68,.15);}
-  .cd[data-i="2"]:hover{border-color:var(--p-green);box-shadow:0 4px 20px rgba(68,221,119,.15);}
-  .cd[data-i="3"]:hover{border-color:var(--p-blue);box-shadow:0 4px 20px rgba(68,170,255,.15);}
-  .cd[data-i="4"]:hover{border-color:var(--p-purple);box-shadow:0 4px 20px rgba(170,102,255,.15);}
-  .cd.cl::after{content:'⭐';position:absolute;top:12px;right:12px;font-size:20px;}
-  .cd-e{font-size:32px;margin-bottom:4px;}
-  .cd-n{font-family:'Dela Gothic One',sans-serif;font-size:18px;margin-bottom:3px;}
-  .cd-s{font-size:12px;color:var(--dim);margin-bottom:6px;}
-  .cd-d{font-size:12px;color:var(--dim);line-height:1.4;}
-  .cd-b{font-size:11px;color:var(--dim);margin-top:6px;}
-
-  /* ===== GAME ===== */
-  #game{background:var(--bg);flex-direction:column;}
-
-  .g-top{
-    width:100%;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;
-    flex-shrink:0;z-index:20;
-    background:rgba(255,255,255,.7);backdrop-filter:blur(8px);
-    border-bottom:1px solid rgba(0,0,0,.06);
-  }
-  .g-info{font-family:'Dela Gothic One',sans-serif;font-size:14px;}
-  .g-right{display:flex;gap:8px;font-size:12px;align-items:center;}
-  .g-right span{display:flex;align-items:center;gap:3px;background:rgba(0,0,0,.05);padding:4px 10px;border-radius:20px;font-weight:700;}
-
-  .g-timer-bar{width:100%;height:6px;background:rgba(0,0,0,.06);flex-shrink:0;}
-  .g-timer-fill{height:100%;background:var(--ok);transition:width .2s linear;border-radius:0 3px 3px 0;}
-  .g-timer-fill.tw{background:var(--p-yellow);}.g-timer-fill.td{background:var(--danger);}
-
-  .g-danger-zone{width:100%;position:relative;flex-shrink:0;height:3px;z-index:10;}
-  .g-danger-line{position:absolute;top:0;left:0;right:0;height:3px;
-    background:repeating-linear-gradient(90deg,var(--danger) 0,var(--danger) 10px,transparent 10px,transparent 20px);
-    opacity:.4;animation:dangerPulse 1s ease-in-out infinite alternate;}
-  @keyframes dangerPulse{0%{opacity:.25;}100%{opacity:.55;}}
-  .g-danger-label{position:absolute;top:6px;right:10px;font-size:9px;color:var(--danger);opacity:.7;font-weight:700;letter-spacing:1px;}
-
-  /* Panel field */
-  .g-panels{
-    flex:1;width:100%;position:relative;overflow:hidden;
-    display:flex;flex-direction:column-reverse;
-    align-items:center;padding:8px 10px;gap:6px;
-  }
-
-  /* Panel tile */
-  .panel{
-    width:100%;max-width:480px;border-radius:14px;
-    padding:14px 16px;display:flex;justify-content:center;align-items:center;
-    cursor:pointer;transition:all .12s;flex-shrink:0;
-    animation:panelRise .3s cubic-bezier(.2,1,.3,1);
-    position:relative;overflow:hidden;
-    font-family:'Dela Gothic One',sans-serif;
-    font-size:clamp(22px,6vw,30px);letter-spacing:3px;text-align:center;
-    color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.15);
-    border:3px solid rgba(255,255,255,.5);
-    box-shadow:inset 0 2px 0 rgba(255,255,255,.4),inset 0 -3px 0 rgba(0,0,0,.1),0 4px 0 rgba(0,0,0,.08),0 6px 16px rgba(0,0,0,.08);
-  }
-  .panel.pc0{background:linear-gradient(180deg,#ff8899,#ff5577);}
-  .panel.pc1{background:linear-gradient(180deg,#66bbff,#3399ee);}
-  .panel.pc2{background:linear-gradient(180deg,#66ee88,#33bb55);}
-  .panel.pc3{background:linear-gradient(180deg,#ffdd55,#eebb00);color:#665500;text-shadow:0 1px 0 rgba(255,255,255,.4);}
-  .panel.pc4{background:linear-gradient(180deg,#bb88ff,#9955ee);}
-  .panel.pc5{background:linear-gradient(180deg,#ffaa66,#ee7733);}
-
-  .panel.selected{
-    border-color:#fff;
-    box-shadow:inset 0 2px 0 rgba(255,255,255,.4),inset 0 -3px 0 rgba(0,0,0,.1),0 0 0 4px rgba(68,170,255,.3),0 4px 0 rgba(0,0,0,.08),0 8px 24px rgba(0,0,0,.1);
-    animation:panelBounce .35s ease;
-  }
-  @keyframes panelBounce{0%{transform:scale(1);}50%{transform:scale(1.03);}100%{transform:scale(1);}}
-  .panel:active{transform:scale(.97);}
-  @keyframes panelRise{0%{transform:translateY(50px);opacity:0;}100%{transform:translateY(0);opacity:1;}}
-
-  .panel.shatter{animation:panelPop .3s ease-out forwards;pointer-events:none;}
-  @keyframes panelPop{
-    0%{transform:scale(1);opacity:1;}
-    40%{transform:scale(1.15);opacity:1;filter:brightness(1.5);}
-    100%{transform:scale(0);opacity:0;filter:brightness(2);}
-  }
-
-  .panel.shake{animation:shake .25s ease;}
-  @keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-8px);}40%{transform:translateX(8px);}60%{transform:translateX(-5px);}80%{transform:translateX(5px);}}
-
-  /* ===== BOTTOM ===== */
-  .g-bottom{
-    width:100%;flex-shrink:0;z-index:20;
-    background:var(--bottom-bg);backdrop-filter:blur(8px);
-    border-top:1px solid rgba(0,0,0,.06);
-    padding:8px 8px calc(env(safe-area-inset-bottom,8px) + 6px);
-  }
-
-  .g-spawn-row{display:flex;justify-content:center;margin-bottom:8px;gap:8px;}
-  .btn-spawn{
-    padding:8px 18px;font-size:12px;border-radius:20px;
-    background:linear-gradient(180deg,#ddeeff,#ccddff);color:var(--p-blue);
-    border:1px solid rgba(68,170,255,.3);font-weight:700;
-  }
-  .btn-quit{padding:8px 14px;font-size:11px;border-radius:20px;background:rgba(0,0,0,.04);color:var(--dim);}
-
-  .choices{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;max-width:440px;margin:0 auto;}
-
-  .ch{
-    font-family:'Dela Gothic One',sans-serif;font-size:clamp(20px,5vw,26px);
-    padding:14px 0;border-radius:12px;cursor:pointer;
-    text-align:center;transition:all .1s;color:#fff;
-    border:3px solid rgba(255,255,255,.5);
-    box-shadow:inset 0 2px 0 rgba(255,255,255,.35),inset 0 -3px 0 rgba(0,0,0,.1),0 3px 0 rgba(0,0,0,.08);
-    text-shadow:0 1px 2px rgba(0,0,0,.15);
-  }
-  .ch:nth-child(1){background:linear-gradient(180deg,#ff8899,#ff5577);}
-  .ch:nth-child(2){background:linear-gradient(180deg,#66bbff,#3399ee);}
-  .ch:nth-child(3){background:linear-gradient(180deg,#66ee88,#33bb55);}
-  .ch:nth-child(4){background:linear-gradient(180deg,#ffdd55,#eebb00);color:#665500;text-shadow:0 1px 0 rgba(255,255,255,.4);}
-  .ch:nth-child(5){background:linear-gradient(180deg,#bb88ff,#9955ee);}
-  .ch:nth-child(6){background:linear-gradient(180deg,#ffaa66,#ee7733);}
-
-  .ch:active{transform:scale(.9) translateY(2px);box-shadow:inset 0 2px 0 rgba(255,255,255,.3),0 1px 0 rgba(0,0,0,.08);}
-  .ch.correct-flash{filter:brightness(1.6);border-color:#fff;box-shadow:0 0 20px rgba(255,255,255,.5);}
-  .ch.wrong-flash{filter:brightness(.6) grayscale(.4);border-color:var(--danger);}
-
-  /* ===== RESULT ===== */
-  #result{justify-content:center;gap:16px;padding:20px;background:linear-gradient(180deg,#d4ecff,var(--bg));}
-  .rc{
-    background:var(--card-bg);backdrop-filter:blur(8px);
-    border:2px solid rgba(0,0,0,.06);box-shadow:0 4px 24px rgba(0,0,0,.06);
-    border-radius:22px;padding:28px 22px;text-align:center;max-width:440px;width:100%;
-  }
-  .rc-i{font-size:48px;margin-bottom:2px;}
-  .rc-rank{font-family:'Dela Gothic One',sans-serif;font-size:52px;margin-bottom:4px;letter-spacing:4px;}
-  .rc-rank.rank-s{color:var(--p-yellow);animation:rankGlow 1s ease-in-out infinite alternate;}
-  @keyframes rankGlow{0%{text-shadow:0 0 8px var(--p-yellow);}100%{text-shadow:0 0 24px var(--p-yellow),0 0 48px var(--p-orange);}}
-  .rc-t{font-family:'Dela Gothic One',sans-serif;font-size:20px;margin-bottom:3px;}
-  .rc-s{font-size:12px;color:var(--dim);margin-bottom:18px;}
-  .rc-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px;}
-  .rc-st{background:rgba(0,0,0,.03);border-radius:12px;padding:12px 6px;border:1px solid rgba(0,0,0,.04);}
-  .rc-sv{font-family:'Dela Gothic One',sans-serif;font-size:22px;}
-  .rc-sl{font-size:10px;color:var(--dim);margin-top:3px;}
-  .rc-msg{font-size:12px;color:var(--dim);line-height:1.5;margin-bottom:16px;padding:10px;background:rgba(0,0,0,.02);border-radius:10px;}
-  .rc-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
-  .btn-rm{padding:12px 28px;font-size:14px;border-radius:50px;background:linear-gradient(180deg,#ff8899,#ff5577);color:#fff;box-shadow:0 3px 0 #cc3355;}
-  .btn-rr{padding:12px 28px;font-size:14px;border-radius:50px;background:rgba(0,0,0,.05);color:var(--txt);border:1px solid rgba(0,0,0,.08);}
-
-  /* GAME OVER */
-  .go-overlay{display:none;position:fixed;inset:0;background:rgba(255,255,255,.85);backdrop-filter:blur(8px);z-index:100;justify-content:center;align-items:center;flex-direction:column;gap:16px;}
-  .go-overlay.active{display:flex;}
-  .go-text{font-family:'Dela Gothic One',sans-serif;font-size:40px;color:var(--danger);animation:goPulse .5s ease-in-out infinite alternate;}
-  @keyframes goPulse{0%{transform:scale(1);}100%{transform:scale(1.04);}}
-  .go-sub{color:var(--dim);font-size:14px;}
-  .btn-go-ok{padding:12px 32px;font-size:16px;background:linear-gradient(180deg,var(--p-blue),#2288dd);color:#fff;border-radius:50px;box-shadow:0 3px 0 #1166aa;}
-
-  /* CHAMPION */
-  .champ{display:none;position:fixed;inset:0;background:rgba(255,255,255,.9);backdrop-filter:blur(8px);z-index:200;justify-content:center;align-items:center;flex-direction:column;gap:18px;}
-  .champ.active{display:flex;}
-  .champ-t{font-family:'Dela Gothic One',sans-serif;font-size:clamp(26px,7vw,44px);color:var(--p-red);text-align:center;}
-  .champ-st{font-size:44px;text-align:center;}
-  .champ-s{font-size:14px;color:var(--dim);text-align:center;}
-  .btn-ch{padding:12px 32px;font-size:16px;background:linear-gradient(180deg,var(--p-yellow),#ddaa00);color:#554400;border-radius:50px;box-shadow:0 3px 0 #aa8800;}
-
-  @media(max-width:600px){.grid{grid-template-columns:1fr;}}
+@import url('https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@400;700;900&display=swap');
+:root{--bg:#e8f4ff;--pr:#ff5577;--pb:#44aaff;--pg:#44dd77;--py:#ffcc22;--pp:#aa66ff;--po:#ff8844;
+  --txt:#334;--dim:#7788aa;--dng:#ff3355;--ok:#22cc66;--card:rgba(255,255,255,.85);--bot:rgba(255,255,255,.92);
+  --alt:#22bb55;--altbg:linear-gradient(135deg,#e8ffe8,#d0f5d0);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Zen Maru Gothic',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overflow:hidden;
+  user-select:none;-webkit-user-select:none;touch-action:manipulation;}
+.bubbles{position:fixed;inset:0;pointer-events:none;z-index:999;overflow:hidden;}
+.bubble{position:absolute;border-radius:50%;opacity:.3;animation:fU linear infinite;}
+@keyframes fU{0%{transform:translateY(100vh) scale(.3);opacity:0;}10%{opacity:.3;}90%{opacity:.25;}100%{transform:translateY(-10vh) scale(1);opacity:0;}}
+.alt-badge{position:fixed;top:12px;right:12px;z-index:1000;display:flex;align-items:center;gap:5px;
+  background:var(--altbg);padding:6px 14px;border-radius:24px;font-family:'Dela Gothic One',sans-serif;
+  font-size:15px;color:#227744;border:2px solid rgba(34,187,85,.25);box-shadow:0 2px 10px rgba(34,187,85,.12);}
+.alt-badge.hide{display:none;}
+.float-alt{position:fixed;z-index:1001;pointer-events:none;font-family:'Dela Gothic One',sans-serif;
+  font-size:28px;color:var(--alt);text-shadow:0 1px 4px rgba(0,0,0,.1);animation:fA .8s ease-out forwards;}
+@keyframes fA{0%{opacity:1;transform:translateY(0) scale(1);}100%{opacity:0;transform:translateY(-60px) scale(1.2);}}
+.screen{display:none;height:100vh;width:100vw;position:absolute;top:0;left:0;}
+.screen.active{display:flex;flex-direction:column;align-items:center;}
+#title{justify-content:center;gap:24px;background:linear-gradient(180deg,#d4ecff,#e8f4ff,#f0e8ff);position:relative;overflow:hidden;}
+.logo{font-family:'Dela Gothic One',sans-serif;font-size:clamp(40px,10vw,80px);text-align:center;z-index:2;line-height:1.2;}
+.logo span{display:inline-block;filter:drop-shadow(0 3px 0 rgba(0,0,0,.1));}
+.logo .l1{color:var(--pr);}.logo .l2{color:var(--py);}.logo .l3{color:var(--pg);}.logo .l4{color:var(--pb);}.logo .l5{color:var(--pp);}
+.tsub{font-size:clamp(12px,3vw,16px);color:var(--dim);z-index:2;text-align:center;letter-spacing:2px;}
+.btn{font-family:'Zen Maru Gothic',sans-serif;font-weight:900;border:none;border-radius:12px;cursor:pointer;transition:all .12s;letter-spacing:1px;}
+.btn:active{transform:scale(.94);}
+.btn-start{font-size:22px;padding:16px 52px;z-index:2;background:linear-gradient(180deg,#ff7799,#ff5577);color:#fff;border-radius:50px;box-shadow:0 4px 0 #cc3355,0 8px 24px rgba(255,85,119,.25);}
+#map{padding:20px;gap:16px;overflow-y:auto;background:linear-gradient(180deg,#d4ecff,var(--bg));padding-bottom:280px;}
+.mt{font-family:'Dela Gothic One',sans-serif;font-size:clamp(20px,5vw,30px);color:var(--pb);}
+.ts{font-size:15px;color:var(--dim);}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;width:100%;max-width:900px;}
+.cd{background:var(--card);backdrop-filter:blur(8px);border-radius:18px;padding:20px;cursor:pointer;transition:all .2s;
+  border:2px solid rgba(0,0,0,.06);position:relative;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06);}
+.cd::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;border-radius:18px 18px 0 0;}
+.cd[data-i="0"]::before{background:var(--pr);}.cd[data-i="1"]::before{background:var(--po);}
+.cd[data-i="2"]::before{background:var(--pg);}.cd[data-i="3"]::before{background:var(--pb);}
+.cd[data-i="4"]::before{background:var(--pp);}
+.cd:active{transform:scale(.97);}
+.cd.cl::after{content:'⭐';position:absolute;top:12px;right:12px;font-size:20px;}
+.cd-e{font-size:32px;margin-bottom:4px;}.cd-n{font-family:'Dela Gothic One',sans-serif;font-size:18px;margin-bottom:3px;}
+.cd-s{font-size:12px;color:var(--dim);margin-bottom:6px;}.cd-d{font-size:12px;color:var(--dim);}
+.cd-b{font-size:11px;color:var(--dim);margin-top:6px;}
+.lsec{width:100%;max-width:900px;margin-top:24px;background:var(--card);backdrop-filter:blur(8px);border-radius:18px;
+  padding:20px;border:2px solid rgba(0,0,0,.06);box-shadow:0 2px 12px rgba(0,0,0,.06);}
+.lt{font-family:'Dela Gothic One',sans-serif;font-size:16px;margin-bottom:12px;}
+.lr{display:flex;gap:8px;margin-bottom:10px;align-items:center;flex-wrap:wrap;}
+.li{flex:1;min-width:120px;padding:10px 14px;border-radius:12px;border:2px solid rgba(0,0,0,.08);
+  font-family:'Zen Maru Gothic',sans-serif;font-size:14px;background:#fff;color:var(--txt);outline:none;}
+.li:focus{border-color:var(--pb);}
+.btn-ln{padding:10px 20px;font-size:14px;border-radius:12px;background:linear-gradient(180deg,#44cc66,#22aa44);color:#fff;box-shadow:0 3px 0 #118833;}
+.btn-ln:disabled{background:#ccc;color:#999;box-shadow:none;cursor:not-allowed;transform:none;}
+.lnt{font-size:11px;color:var(--dim);}
+.lcf{display:none;position:fixed;inset:0;background:rgba(255,255,255,.88);backdrop-filter:blur(8px);z-index:2000;
+  justify-content:center;align-items:center;flex-direction:column;gap:14px;}
+.lcf.active{display:flex;}
+.lct{font-family:'Dela Gothic One',sans-serif;font-size:18px;text-align:center;padding:0 20px;}
+.lcw{font-size:13px;color:var(--dng);text-align:center;}
+.lcb{display:flex;gap:10px;}
+.btn-lcc{padding:10px 24px;font-size:14px;border-radius:50px;background:rgba(0,0,0,.06);color:var(--txt);}
+.btn-lco{padding:10px 24px;font-size:14px;border-radius:50px;background:linear-gradient(180deg,#44cc66,#22aa44);color:#fff;box-shadow:0 3px 0 #118833;}
+#game{background:var(--bg);flex-direction:column;}
+.gtop{width:100%;padding:8px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;z-index:20;
+  background:rgba(255,255,255,.7);backdrop-filter:blur(8px);border-bottom:1px solid rgba(0,0,0,.06);}
+.ginf{font-family:'Dela Gothic One',sans-serif;font-size:14px;}
+.grt{display:flex;gap:8px;font-size:12px;align-items:center;}
+.grt span{display:flex;align-items:center;gap:3px;background:rgba(0,0,0,.05);padding:4px 10px;border-radius:20px;font-weight:700;}
+.gtb{width:100%;height:6px;background:rgba(0,0,0,.06);flex-shrink:0;}
+.gtf{height:100%;background:var(--ok);transition:width .2s linear;border-radius:0 3px 3px 0;}
+.gtf.tw{background:var(--py);}.gtf.td{background:var(--dng);}
+.gdz{width:100%;position:relative;flex-shrink:0;height:3px;z-index:10;}
+.gdl{position:absolute;top:0;left:0;right:0;height:3px;background:repeating-linear-gradient(90deg,var(--dng) 0,var(--dng) 10px,transparent 10px,transparent 20px);opacity:.4;animation:dp 1s ease-in-out infinite alternate;}
+@keyframes dp{0%{opacity:.25;}100%{opacity:.55;}}
+.gdlb{position:absolute;top:6px;right:10px;font-size:9px;color:var(--dng);opacity:.7;font-weight:700;}
+.gpan{flex:1;width:100%;overflow:hidden;display:flex;flex-direction:column-reverse;align-items:center;padding:8px 10px;gap:6px;}
+.panel{width:100%;max-width:540px;border-radius:14px;padding:14px 16px;display:flex;justify-content:center;align-items:center;
+  cursor:pointer;transition:all .12s;flex-shrink:0;animation:pR .3s cubic-bezier(.2,1,.3,1);position:relative;
+  font-family:'Dela Gothic One',sans-serif;font-size:clamp(22px,5vw,32px);letter-spacing:3px;text-align:center;
+  color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.15);border:3px solid rgba(255,255,255,.5);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.4),inset 0 -3px 0 rgba(0,0,0,.1),0 4px 0 rgba(0,0,0,.08);}
+.panel.pc0{background:linear-gradient(180deg,#ff8899,#ff5577);}.panel.pc1{background:linear-gradient(180deg,#66bbff,#3399ee);}
+.panel.pc2{background:linear-gradient(180deg,#66ee88,#33bb55);}.panel.pc3{background:linear-gradient(180deg,#ffdd55,#eebb00);color:#665500;text-shadow:0 1px 0 rgba(255,255,255,.4);}
+.panel.pc4{background:linear-gradient(180deg,#bb88ff,#9955ee);}.panel.pc5{background:linear-gradient(180deg,#ffaa66,#ee7733);}
+.panel.sel{border-color:#fff;box-shadow:inset 0 2px 0 rgba(255,255,255,.4),inset 0 -3px 0 rgba(0,0,0,.1),0 0 0 4px rgba(68,170,255,.3),0 4px 0 rgba(0,0,0,.08);}
+.panel:active{transform:scale(.97);}
+@keyframes pR{0%{transform:translateY(50px);opacity:0;}100%{transform:translateY(0);opacity:1;}}
+.panel.shatter{animation:pP .3s ease-out forwards;pointer-events:none;}
+@keyframes pP{0%{transform:scale(1);opacity:1;}40%{transform:scale(1.15);filter:brightness(1.5);}100%{transform:scale(0);opacity:0;filter:brightness(2);}}
+.panel.shake{animation:sk .25s ease;}
+@keyframes sk{0%,100%{transform:translateX(0);}25%{transform:translateX(-8px);}50%{transform:translateX(8px);}75%{transform:translateX(-5px);}}
+.gbot{width:100%;flex-shrink:0;z-index:20;background:var(--bot);backdrop-filter:blur(8px);
+  border-top:1px solid rgba(0,0,0,.06);padding:8px 10px calc(env(safe-area-inset-bottom,8px) + 6px);}
+.gsr{display:flex;justify-content:center;margin-bottom:8px;gap:8px;}
+.btn-sp{padding:8px 18px;font-size:12px;border-radius:20px;background:linear-gradient(180deg,#ddeeff,#ccddff);color:var(--pb);border:1px solid rgba(68,170,255,.3);font-weight:700;}
+.btn-qt{padding:8px 14px;font-size:11px;border-radius:20px;background:rgba(0,0,0,.04);color:var(--dim);}
+.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;max-width:500px;margin:0 auto;}
+.ch{font-family:'Dela Gothic One',sans-serif;font-size:clamp(20px,4.5vw,28px);padding:14px 0;border-radius:12px;
+  cursor:pointer;text-align:center;transition:all .1s;color:#fff;border:3px solid rgba(255,255,255,.5);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.35),inset 0 -3px 0 rgba(0,0,0,.1),0 3px 0 rgba(0,0,0,.08);}
+.ch:nth-child(1){background:linear-gradient(180deg,#ff8899,#ff5577);}
+.ch:nth-child(2){background:linear-gradient(180deg,#66bbff,#3399ee);}
+.ch:nth-child(3){background:linear-gradient(180deg,#66ee88,#33bb55);}
+.ch:nth-child(4){background:linear-gradient(180deg,#ffdd55,#eebb00);color:#665500;}
+.ch:nth-child(5){background:linear-gradient(180deg,#bb88ff,#9955ee);}
+.ch:nth-child(6){background:linear-gradient(180deg,#ffaa66,#ee7733);}
+.ch:active{transform:scale(.9) translateY(2px);}
+.ch.cok{filter:brightness(1.6);border-color:#fff;}.ch.cng{filter:brightness(.6) grayscale(.4);border-color:var(--dng);}
+#result{justify-content:center;gap:16px;padding:20px;background:linear-gradient(180deg,#d4ecff,var(--bg));overflow-y:auto;}
+.rc{background:var(--card);backdrop-filter:blur(8px);border:2px solid rgba(0,0,0,.06);border-radius:22px;
+  padding:28px 22px;text-align:center;max-width:480px;width:100%;}
+.rci{font-size:48px;margin-bottom:2px;}
+.rrk{font-family:'Dela Gothic One',sans-serif;font-size:52px;margin-bottom:4px;letter-spacing:4px;}
+.rrk.rs{color:var(--py);animation:rg 1s ease-in-out infinite alternate;}
+@keyframes rg{0%{text-shadow:0 0 8px var(--py);}100%{text-shadow:0 0 24px var(--py),0 0 48px var(--po);}}
+.rstr{font-size:28px;margin-bottom:8px;}
+.rtt{font-family:'Dela Gothic One',sans-serif;font-size:20px;margin-bottom:3px;}
+.rsu{font-size:12px;color:var(--dim);margin-bottom:14px;}
+.rsts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;}
+.rst{background:rgba(0,0,0,.03);border-radius:12px;padding:12px 6px;}
+.rsv{font-family:'Dela Gothic One',sans-serif;font-size:22px;}.rsl{font-size:10px;color:var(--dim);margin-top:3px;}
+.ralt{background:var(--altbg);border:2px solid rgba(34,187,85,.2);border-radius:14px;padding:14px;margin-bottom:14px;}
+.rae{font-family:'Dela Gothic One',sans-serif;font-size:28px;color:var(--alt);}
+.rad{font-size:11px;color:#558866;margin-top:4px;line-height:1.6;}
+.rat{font-size:13px;color:#558866;margin-top:8px;}
+.rmsg{font-size:12px;color:var(--dim);line-height:1.5;margin-bottom:16px;padding:10px;background:rgba(0,0,0,.02);border-radius:10px;}
+.rbtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.btn-rm{padding:12px 28px;font-size:14px;border-radius:50px;background:linear-gradient(180deg,#ff8899,#ff5577);color:#fff;box-shadow:0 3px 0 #cc3355;}
+.btn-rr{padding:12px 28px;font-size:14px;border-radius:50px;background:rgba(0,0,0,.05);color:var(--txt);}
+.goov{display:none;position:fixed;inset:0;background:rgba(255,255,255,.85);backdrop-filter:blur(8px);z-index:100;
+  justify-content:center;align-items:center;flex-direction:column;gap:16px;}
+.goov.active{display:flex;}
+.got{font-family:'Dela Gothic One',sans-serif;font-size:40px;color:var(--dng);animation:gpp .5s ease-in-out infinite alternate;}
+@keyframes gpp{0%{transform:scale(1);}100%{transform:scale(1.04);}}
+.gos{color:var(--dim);font-size:14px;}
+.btn-gok{padding:12px 32px;font-size:16px;background:linear-gradient(180deg,var(--pb),#2288dd);color:#fff;border-radius:50px;box-shadow:0 3px 0 #1166aa;}
+.champ{display:none;position:fixed;inset:0;background:rgba(255,255,255,.9);backdrop-filter:blur(8px);z-index:200;
+  justify-content:center;align-items:center;flex-direction:column;gap:18px;}
+.champ.active{display:flex;}
+.chpt{font-family:'Dela Gothic One',sans-serif;font-size:clamp(26px,7vw,44px);color:var(--pr);text-align:center;}
+.chps{font-size:44px;}.chpd{font-size:14px;color:var(--dim);text-align:center;}
+.btn-ch{padding:12px 32px;font-size:16px;background:linear-gradient(180deg,var(--py),#ddaa00);color:#554400;border-radius:50px;box-shadow:0 3px 0 #aa8800;}
+/* TABLET */
+@media(min-width:600px){
+  .gtop{padding:10px 24px;}.ginf{font-size:16px;}.grt{gap:12px;font-size:14px;}
+  .gpan{padding:12px 20px;gap:8px;}.panel{max-width:600px;padding:18px 20px;font-size:34px;border-radius:16px;}
+  .gbot{padding:10px 20px calc(env(safe-area-inset-bottom,10px) + 8px);}
+  .choices{max-width:560px;gap:10px;}.ch{font-size:28px;padding:18px 0;border-radius:14px;}
+  .btn-sp{font-size:14px;padding:10px 24px;}
+  .alt-badge{font-size:17px;padding:8px 18px;top:16px;right:16px;}
+  .float-alt{font-size:34px;}
+  .rc{max-width:520px;padding:32px 28px;}.rrk{font-size:60px;}.rae{font-size:32px;}
+}
+@media(min-width:900px){
+  .grid{grid-template-columns:repeat(3,1fr);}
+  .panel{max-width:680px;font-size:38px;}.choices{max-width:640px;}.ch{font-size:32px;padding:20px 0;}
+}
+@media(max-width:599px){.grid{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
+<div class="bubbles" id="bub"></div>
+<div class="alt-badge" id="aB">🪙 <span id="aT">0</span> ALT</div>
 
-<!-- BUBBLES -->
-<div class="bubbles" id="bubbles"></div>
-
-<!-- TITLE -->
 <div id="title" class="screen active">
-  <div class="logo">
-    <span class="l1">暗</span><span class="l2">算</span><br>
-    <span class="l3">パ</span><span class="l4">ネ</span><span class="l5">ル</span>
-  </div>
-  <div class="title-sub">パネルを暗算で撃破せよ！</div>
+  <div class="logo"><span class="l1">暗</span><span class="l2">算</span><br><span class="l3">パ</span><span class="l4">ネ</span><span class="l5">ル</span></div>
+  <div class="tsub">パネルを暗算で撃破せよ！</div>
   <button class="btn btn-start" onclick="showMap()">START</button>
 </div>
 
-<!-- MAP -->
 <div id="map" class="screen">
   <div class="mt">🎮 ステージ選択</div>
-  <div class="ts" id="ts"><span class="si">⭐</span> 0 / 5</div>
+  <div class="ts" id="ts"></div>
   <div class="grid" id="grid"></div>
+  <div class="lsec">
+    <div class="lt">💰 ALTをTRAILに報告する</div>
+    <div class="lr"><input class="li" id="lnm" placeholder="なまえを入力" maxlength="20" oninput="ulb()">
+      <button class="btn btn-ln" id="lbtn" disabled onclick="slc()">💬 LINEで報告する</button></div>
+    <div class="lnt">報告するとALTはリセットされます</div>
+  </div>
 </div>
 
-<!-- GAME -->
 <div id="game" class="screen">
-  <div class="g-top">
-    <div class="g-info" id="gi">九九</div>
-    <div class="g-right">
-      <span>⏱ <span id="gt">60</span></span>
-      <span>💰 <span id="gsc">0</span></span>
-      <span>📦 <span id="gpc">0</span>/7</span>
-    </div>
+  <div class="gtop"><div class="ginf" id="gi">九九</div>
+    <div class="grt"><span>⏱<span id="gt">60</span></span><span>💰<span id="gsc">0</span></span><span>📦<span id="gpc">0</span>/7</span></div>
   </div>
-  <div class="g-timer-bar"><div class="g-timer-fill" id="gtf" style="width:100%"></div></div>
-  <div class="g-danger-zone"><div class="g-danger-line"></div><div class="g-danger-label">▼ 7枚でOUT</div></div>
-  <div class="g-panels" id="gp"></div>
-  <div class="g-bottom">
-    <div class="g-spawn-row">
-      <button class="btn btn-spawn" onclick="manualSpawn()">＋ パネル追加</button>
-      <button class="btn btn-quit" onclick="quitGame()">やめる</button>
-    </div>
-    <div class="choices" id="choices"></div>
+  <div class="gtb"><div class="gtf" id="gtf" style="width:100%"></div></div>
+  <div class="gdz"><div class="gdl"></div><div class="gdlb">▼ 7枚でOUT</div></div>
+  <div class="gpan" id="gp"></div>
+  <div class="gbot">
+    <div class="gsr"><button class="btn btn-sp" onclick="mSpawn()">＋ パネル追加</button><button class="btn btn-qt" onclick="qGame()">やめる</button></div>
+    <div class="choices" id="chs"></div>
   </div>
 </div>
 
-<!-- GAME OVER -->
-<div class="go-overlay" id="goOv">
-  <div class="go-text">GAME OVER</div>
-  <div class="go-sub" id="goSub">パネルが7枚たまった…</div>
-  <button class="btn btn-go-ok" onclick="goToResult()">結果を見る</button>
-</div>
+<div class="goov" id="goOv"><div class="got">GAME OVER</div><div class="gos" id="goS"></div>
+  <button class="btn btn-gok" onclick="toRes()">結果を見る</button></div>
 
-<!-- RESULT -->
-<div id="result" class="screen">
-  <div class="rc">
-    <div class="rc-i" id="rci">⭐</div>
-    <div class="rc-rank" id="rrank">S</div>
-    <div class="rc-t" id="rct"></div>
-    <div class="rc-s" id="rcs"></div>
-    <div class="rc-stats">
-      <div class="rc-st"><div class="rc-sv" id="rvs">0</div><div class="rc-sl">スコア</div></div>
-      <div class="rc-st"><div class="rc-sv" id="rvc">0</div><div class="rc-sl">撃破数</div></div>
-      <div class="rc-st"><div class="rc-sv" id="rvk">0</div><div class="rc-sl">最高連続</div></div>
-    </div>
-    <div class="rc-msg" id="rmsg"></div>
-    <div class="rc-btns">
-      <button class="btn btn-rm" onclick="showMap()">マップへ</button>
-      <button class="btn btn-rr" onclick="retry()">もう一度</button>
-    </div>
+<div id="result" class="screen"><div class="rc">
+  <div class="rci" id="rci"></div><div class="rrk" id="rrk"></div><div class="rstr" id="rst"></div>
+  <div class="rtt" id="rct"></div><div class="rsu" id="rcs"></div>
+  <div class="rsts">
+    <div class="rst"><div class="rsv" id="rvs">0</div><div class="rsl">スコア</div></div>
+    <div class="rst"><div class="rsv" id="rvc">0</div><div class="rsl">撃破数</div></div>
+    <div class="rst"><div class="rsv" id="rvk">0</div><div class="rsl">最高連続</div></div>
   </div>
-</div>
+  <div class="ralt"><div class="rae" id="rae"></div><div class="rad" id="rad"></div><div class="rat" id="rat"></div></div>
+  <div class="rmsg" id="rmsg"></div>
+  <div class="rbtns"><button class="btn btn-rm" onclick="showMap()">マップへ</button><button class="btn btn-rr" onclick="rty()">もう一度</button></div>
+</div></div>
 
-<!-- CHAMPION -->
-<div class="champ" id="champ">
-  <div class="champ-st">⭐⭐⭐⭐⭐</div>
-  <div class="champ-t">暗算マスター！</div>
-  <div class="champ-s">全ステージクリア！</div>
-  <button class="btn btn-ch" onclick="E('champ').classList.remove('active')">OK</button>
-</div>
+<div class="champ" id="champ"><div class="chps">⭐⭐⭐⭐⭐</div><div class="chpt">暗算マスター！</div>
+  <div class="chpd">全ステージクリア！</div><button class="btn btn-ch" onclick="E('champ').classList.remove('active')">OK</button></div>
+
+<div class="lcf" id="lcfm"><div class="lct" id="lctx"></div><div class="lcw">送信後、ALTは0に戻ります</div>
+  <div class="lcb"><button class="btn btn-lcc" onclick="E('lcfm').classList.remove('active')">やめる</button>
+    <button class="btn btn-lco" onclick="doLine()">OK！送る</button></div></div>
 
 <script>
-// ===== BUBBLES =====
-const BUBBLE_COLORS=['#ff5577','#44aaff','#44dd77','#ffcc22','#aa66ff','#ff8844'];
-const bubbleContainer=document.getElementById('bubbles');
-let bubbleIntensity=0; // 0=calm, 1=medium, 2=intense
+// === UTIL ===
+function ri(a,b){return~~(Math.random()*(b-a+1))+a;}
+function rc(a){return a[~~(Math.random()*a.length)];}
+function E(id){return document.getElementById(id);}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));E(id).classList.add('active');}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=ri(0,i);[a[i],a[j]]=[a[j],a[i]];}return a;}
+function updAlt(){E('aT').textContent=S.alt;}
 
-function getBubbleSpeed(){
-  if(bubbleIntensity>=2) return {dur:[2,4], delay:[0,1], count:10};
-  if(bubbleIntensity>=1) return {dur:[4,6], delay:[0,2], count:7};
-  return {dur:[8,12], delay:[0,4], count:5};
-}
+// === BUBBLES ===
+const BC=['#ff5577','#44aaff','#44dd77','#ffcc22','#aa66ff','#ff8844'],bC=E('bub');
+let bI=0;
+function bSp(){if(bI>=2)return{d:[2,4],dl:[0,1],n:10};if(bI>=1)return{d:[4,6],dl:[0,2],n:7};return{d:[8,12],dl:[0,4],n:5};}
+function mB(){const s=bSp(),b=document.createElement('div');b.className='bubble';const z=Math.random()*50+15;
+  b.style.cssText=`width:${z}px;height:${z}px;left:${Math.random()*100}%;background:${BC[~~(Math.random()*6)]};animation-duration:${Math.random()*(s.d[1]-s.d[0])+s.d[0]}s;animation-delay:${Math.random()*(s.dl[1]-s.dl[0])+s.dl[0]}s`;
+  bC.appendChild(b);b.addEventListener('animationend',()=>{b.remove();mB();});}
+function uBI(){if(!G||G.ended){bI=0;return;}let l=0;if(G.combo>=3)l++;if(G.timeLeft<=15)l++;if(G.panels.length>=5)l++;bI=Math.min(2,l);
+  const t=bSp().n;if(bC.children.length<t)for(let i=bC.children.length;i<t;i++)mB();}
+for(let i=0;i<5;i++)mB();
 
-function makeBubble(){
-  const sp=getBubbleSpeed();
-  const b=document.createElement('div');
-  b.className='bubble';
-  const size=Math.random()*50+15;
-  b.style.width=size+'px';b.style.height=size+'px';
-  b.style.left=Math.random()*100+'%';
-  b.style.background=BUBBLE_COLORS[Math.floor(Math.random()*BUBBLE_COLORS.length)];
-  b.style.animationDuration=(Math.random()*(sp.dur[1]-sp.dur[0])+sp.dur[0])+'s';
-  b.style.animationDelay=(Math.random()*(sp.delay[1]-sp.delay[0])+sp.delay[0])+'s';
-  bubbleContainer.appendChild(b);
-  b.addEventListener('animationend',()=>{b.remove();makeBubble();});
-}
-
-function updateBubbleIntensity(){
-  if(!G||G.ended){bubbleIntensity=0;return;}
-  let level=0;
-  if(G.streak>=FEVER_AT) level++;
-  if(G.timeLeft<=15) level++;
-  if(G.panels.length>=5) level++;
-  bubbleIntensity=Math.min(2,level);
-
-  // Adjust bubble count
-  const target=getBubbleSpeed().count;
-  const current=bubbleContainer.children.length;
-  if(current<target){for(let i=0;i<target-current;i++) makeBubble();}
-}
-
-// Init calm bubbles
-for(let i=0;i<5;i++) makeBubble();
-
-// ===== STAGES =====
-const STAGES=[
-  {key:'kuku',name:'九九',emoji:'🔴',sub:'1ケタ × 1ケタ',desc:'基本のかけ算',color:'#ff5577',
-    gen:()=>{const a=ri(2,9),b=ri(2,9);return{text:`${a} × ${b}`,ans:a*b};}},
-  {key:'big',name:'×10のかけ算',emoji:'🟠',sub:'大きい数のかけ算',desc:'10・100の位のかけ算',color:'#ff8844',
-    gen:()=>{const p=[
-      ()=>{const a=rc([10,20,30,40,50,60,70,80,90]),b=ri(2,9);return{text:`${a}×${b}`,ans:a*b};},
+// === STAGES ===
+const STG=[
+  {key:'kuku',name:'九九',emoji:'🔴',sub:'1ケタ×1ケタ',desc:'基本のかけ算',color:'#ff5577',
+    gen(){const a=ri(2,9),b=ri(2,9);return{text:`${a} × ${b}`,ans:a*b};}},
+  {key:'big',name:'×10のかけ算',emoji:'🟠',sub:'大きい数のかけ算',desc:'10・100の位',color:'#ff8844',
+    gen(){const p=[()=>{const a=rc([10,20,30,40,50,60,70,80,90]),b=ri(2,9);return{text:`${a}×${b}`,ans:a*b};},
       ()=>{const a=rc([100,200,300,400,500]),b=ri(2,9);return{text:`${a}×${b}`,ans:a*b};},
       ()=>{const a=ri(2,9),b=rc([11,12,13,14,15]);return{text:`${a}×${b}`,ans:a*b};},
-      ()=>{const a=rc([20,30,40,50]),b=rc([20,30,40,50]);return{text:`${a}×${b}`,ans:a*b};}
-    ];return rc(p)();}},
+      ()=>{const a=rc([20,30,40,50]),b=rc([20,30,40,50]);return{text:`${a}×${b}`,ans:a*b};}];return rc(p)();}},
   {key:'div',name:'わり算',emoji:'🟢',sub:'あまりなしのわり算',desc:'わり切れるわり算',color:'#44dd77',
-    gen:()=>{const b=ri(2,9),c=ri(2,12),a=b*c;return{text:`${a} ÷ ${b}`,ans:c};}},
-  {key:'rev',name:'逆算・穴うめ',emoji:'🔵',sub:'□を求めよう',desc:'かけ算・わり算の穴うめ',color:'#44aaff',
-    gen:()=>{const t=ri(0,3);
-      if(t===0){const a=ri(2,9),b=ri(2,9);return{text:`□×${b}=${a*b}`,ans:a};}
+    gen(){const b=ri(2,9),c=ri(2,12),a=b*c;return{text:`${a} ÷ ${b}`,ans:c};}},
+  {key:'rev',name:'逆算・穴うめ',emoji:'🔵',sub:'□を求めよう',desc:'穴うめ計算',color:'#44aaff',
+    gen(){const t=ri(0,3);if(t===0){const a=ri(2,9),b=ri(2,9);return{text:`□×${b}=${a*b}`,ans:a};}
       if(t===1){const a=ri(2,9),b=ri(2,9);return{text:`${a}×□=${a*b}`,ans:b};}
       if(t===2){const b=ri(2,9),c=ri(2,12);return{text:`${b*c}÷□=${c}`,ans:b};}
       const b=ri(2,9),c=ri(2,9);return{text:`□÷${b}=${c}`,ans:b*c};}},
   {key:'mix',name:'総合ミックス',emoji:'🟣',sub:'全タイプ混合',desc:'ランダム出題',color:'#aa66ff',
-    gen:()=>rc([STAGES[0].gen,STAGES[1].gen,STAGES[2].gen,STAGES[3].gen])()}
+    gen(){return rc([STG[0],STG[1],STG[2],STG[3]]).gen();}}
 ];
 
-const MAX_PANELS=7,GAME_TIME=60;
-const SPAWN_START=4000,SPAWN_MIN=800,SPAWN_ACCEL=250;
-const BASE_PT=10,FEVER_AT=3,FEVER_MULT=2,CLEAR_THRESHOLD=15;
-const PANEL_COLORS=6;
-
-let S={cleared:{},best:{}};
+const MXP=7,GTIM=60,SSMS=4000,SMIN=800,SACC=250,BPT=10,FEVAT=3,FEVM=2,CLTH=15,PCC=6;
+let S={cleared:{},best:{},alt:0,fc:{}};
 let G=null;
 
-function ri(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
-function rc(a){return a[Math.floor(Math.random()*a.length)];}
-function E(id){return document.getElementById(id);}
-function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));E(id).classList.add('active');}
-function shuffle(a){for(let i=a.length-1;i>0;i--){const j=ri(0,i);[a[i],a[j]]=[a[j],a[i]];}return a;}
-
-function makeChoices(ans){
-  const set=new Set([ans]);let tries=0;
-  while(set.size<6&&tries<100){tries++;let d;const r=Math.random();
-    if(r<.3){d=ans+rc([-3,-2,-1,1,2,3]);}
-    else if(r<.6){const range=Math.max(3,Math.floor(ans*.2));d=ans+ri(-range,range);}
-    else{if(ans>=10&&ans<100){const t=Math.floor(ans/10),o=ans%10;d=o*10+t;}else{d=ans+rc([-5,-4,-3,-2,-1,1,2,3,4,5,10,-10]);}}
-    if(d>0&&d!==ans)set.add(d);
-  }
-  let f=1;while(set.size<6){set.add(ans+f);f=f>0?-f:(-f+1);}
-  return shuffle([...set]);
+function floatN(n){
+  const el=document.createElement('div');el.className='float-alt';el.textContent=`+${n}`;
+  el.style.left=(Math.random()*30+35)+'%';el.style.top='38%';
+  document.body.appendChild(el);el.addEventListener('animationend',()=>el.remove());
 }
 
+function makeC(ans){
+  const s=new Set([ans]);let t=0;
+  while(s.size<6&&t<100){t++;let d;const r=Math.random();
+    if(r<.3)d=ans+rc([-3,-2,-1,1,2,3]);
+    else if(r<.6){const rng=Math.max(3,~~(ans*.2));d=ans+ri(-rng,rng);}
+    else{if(ans>=10&&ans<100){const a=~~(ans/10),b=ans%10;d=b*10+a;}else d=ans+rc([-5,-4,-3,-2,-1,1,2,3,4,5,10,-10]);}
+    if(d>0&&d!==ans)s.add(d);}
+  let f=1;while(s.size<6){s.add(ans+f);f=f>0?-f:(-f+1);}
+  return shuffle([...s]);
+}
+
+// === ALT CALC ===
+function altForCorrect(combo){
+  if(combo>=4)return 1;
+  return 0;
+}
+function starRating(score,destroyed){
+  if(score>=300)return 3;
+  if(score>=130)return 2;
+  if(destroyed>=CLTH)return 1;
+  return 0;
+}
+function starBonus(stars){if(stars===3)return 5;if(stars===2)return 3;if(stars===1)return 1;return 0;}
+
+// === MAP ===
 function showMap(){
-  show('map');const g=E('grid');g.innerHTML='';let stars=0;
-  STAGES.forEach((s,i)=>{
-    if(S.cleared[s.key])stars++;
+  show('map');E('aB').classList.remove('hide');updAlt();
+  const g=E('grid');g.innerHTML='';let st=0;
+  STG.forEach((s,i)=>{if(S.cleared[s.key])st++;
     const d=document.createElement('div');d.className='cd'+(S.cleared[s.key]?' cl':'');d.dataset.i=i;
-    d.onclick=()=>startGame(i);
+    d.onclick=()=>startG(i);
     d.innerHTML=`<div class="cd-e">${s.emoji}</div><div class="cd-n" style="color:${s.color}">${s.name}</div>
       <div class="cd-s">${s.sub}</div><div class="cd-d">${s.desc}</div>
       ${S.best[s.key]?`<div class="cd-b">ベスト: ${S.best[s.key]}pt</div>`:''}`;
-    g.appendChild(d);
-  });
-  E('ts').innerHTML=`<span class="si">⭐</span> ${stars} / 5`;
+    g.appendChild(d);});
+  E('ts').innerHTML=`<span class="si" style="color:var(--py)">⭐</span> ${st} / 5`;
 }
 
-function startGame(idx){
-  const s=STAGES[idx];
-  G={idx,stage:s,panels:[],selectedId:null,score:0,streak:0,maxStreak:0,destroyed:0,
-    timeLeft:GAME_TIME,spawnInterval:SPAWN_START,spawnTimer:null,clockTimer:null,nextId:0,ended:false,colorIdx:0};
-  show('game');
+// === GAME ===
+function startG(idx){
+  const s=STG[idx];
+  G={idx,stage:s,panels:[],selId:null,score:0,combo:0,maxCombo:0,destroyed:0,totalQ:0,
+    timeLeft:GTIM,spInt:SSMS,spTmr:null,clkTmr:null,nxId:0,ended:false,cIdx:0,
+    altEarned:0,altDetail:[]};
+  show('game');E('aB').classList.add('hide');
   E('gi').textContent=`${s.emoji} ${s.name}`;E('gi').style.color=s.color;
   E('gp').innerHTML='';E('gsc').textContent='0';E('gpc').textContent='0';
-  E('gt').textContent=GAME_TIME;E('gtf').style.width='100%';E('gtf').className='g-timer-fill';
-  E('goOv').classList.remove('active');E('choices').innerHTML='';
-  G.clockTimer=setInterval(clockTick,1000);spawnPanel();scheduleSpawn();
+  E('gt').textContent=GTIM;E('gtf').style.width='100%';E('gtf').className='gtf';
+  E('goOv').classList.remove('active');E('chs').innerHTML='';
+  G.clkTmr=setInterval(clkTick,1000);spawnP();schedSp();
 }
 
-function clockTick(){
+function clkTick(){
   if(!G||G.ended)return;G.timeLeft--;E('gt').textContent=Math.max(0,G.timeLeft);
-  const pct=(G.timeLeft/GAME_TIME)*100;const f=E('gtf');
-  f.style.width=pct+'%';f.className='g-timer-fill'+(pct<15?' td':pct<40?' tw':'');
-  updateBubbleIntensity();
-  if(G.timeLeft<=0)endGame(true);
+  const p=(G.timeLeft/GTIM)*100,f=E('gtf');
+  f.style.width=p+'%';f.className='gtf'+(p<15?' td':p<40?' tw':'');
+  uBI();if(G.timeLeft<=0)endG(true);
 }
 
-function scheduleSpawn(){
+function schedSp(){
   if(!G||G.ended)return;
-  G.spawnTimer=setTimeout(()=>{if(!G||G.ended)return;spawnPanel();
-    G.spawnInterval=Math.max(SPAWN_MIN,G.spawnInterval-SPAWN_ACCEL);scheduleSpawn();},G.spawnInterval);
+  G.spTmr=setTimeout(()=>{if(!G||G.ended)return;spawnP();
+    G.spInt=Math.max(SMIN,G.spInt-SACC);schedSp();},G.spInt);
 }
 
-function spawnPanel(){
-  if(!G||G.ended)return;const q=G.stage.gen();const id=G.nextId++;
-  const choices=makeChoices(q.ans);const ci=G.colorIdx%PANEL_COLORS;G.colorIdx++;
-  const panel={id,text:q.text,ans:q.ans,choices,el:null,done:false};
-  const el=document.createElement('div');el.className=`panel pc${ci}`;el.dataset.pid=id;
-  el.textContent=q.text;el.onclick=()=>selectPanel(id);panel.el=el;
-  G.panels.push(panel);E('gp').appendChild(el);updatePanelCount();autoSelect();
-  if(G.panels.length>=MAX_PANELS)endGame(false);
+function spawnP(){
+  if(!G||G.ended)return;
+  const q=G.stage.gen(),id=G.nxId++,ch=makeC(q.ans),ci=G.cIdx%PCC;G.cIdx++;
+  const pan={id,text:q.text,ans:q.ans,choices:ch,el:null,done:false};
+  const el=document.createElement('div');el.className=`panel pc${ci}`;el.textContent=q.text;
+  el.onclick=()=>selP(id);pan.el=el;
+  G.panels.push(pan);E('gp').appendChild(el);updPC();autoSel();
+  if(G.panels.length>=MXP)endG(false);
 }
 
-function manualSpawn(){if(!G||G.ended||G.panels.length>=MAX_PANELS-1)return;spawnPanel();}
-function autoSelect(){if(!G||G.panels.length===0)return;selectPanel(G.panels[0].id);}
+function mSpawn(){if(!G||G.ended||G.panels.length>=MXP-1)return;spawnP();}
+function autoSel(){if(!G||!G.panels.length)return;selP(G.panels[0].id);}
 
-function selectPanel(id){
-  if(!G||G.ended)return;G.panels.forEach(p=>p.el.classList.remove('selected'));
-  G.selectedId=id;const p=findPanel(id);if(p){p.el.classList.add('selected');renderChoices(p);}
+function selP(id){
+  if(!G||G.ended)return;
+  G.panels.forEach(p=>p.el.classList.remove('sel'));
+  G.selId=id;const p=G.panels.find(x=>x.id===id);
+  if(p){p.el.classList.add('sel');renC(p);}
 }
 
-function findPanel(id){return G.panels.find(p=>p.id===id);}
-function updatePanelCount(){if(G)E('gpc').textContent=G.panels.length;}
+function updPC(){if(G)E('gpc').textContent=G.panels.length;}
 
-function renderChoices(panel){
-  const w=E('choices');w.innerHTML='';
-  panel.choices.forEach(val=>{const b=document.createElement('button');b.className='ch';b.textContent=val;
-    b.onclick=()=>pickChoice(panel,val,b);w.appendChild(b);});
+function renC(pan){
+  const w=E('chs');w.innerHTML='';
+  pan.choices.forEach(v=>{const b=document.createElement('button');b.className='ch';b.textContent=v;
+    b.onclick=()=>pick(pan,v,b);w.appendChild(b);});
 }
 
-function pickChoice(panel,val,btn){
-  if(!G||G.ended||panel.done)return;
-  if(val===panel.ans){
-    panel.done=true;btn.classList.add('correct-flash');
-    panel.el.classList.remove('selected');panel.el.classList.add('shatter');
-    G.streak++;if(G.streak>G.maxStreak)G.maxStreak=G.streak;
-    const mult=G.streak>=FEVER_AT?FEVER_MULT:1;G.score+=BASE_PT*mult;G.destroyed++;E('gsc').textContent=G.score;
-    updateBubbleIntensity();
-    const idx=G.panels.findIndex(x=>x.id===panel.id);if(idx>=0)G.panels.splice(idx,1);
-    updatePanelCount();if(G.panels.length>0){autoSelect();}else{spawnPanel();}
-    setTimeout(()=>{panel.el.remove();},250);
+function pick(pan,v,btn){
+  if(!G||G.ended||pan.done)return;
+  G.totalQ++;
+  if(v===pan.ans){
+    // CORRECT
+    pan.done=true;btn.classList.add('cok');
+    pan.el.classList.remove('sel');pan.el.classList.add('shatter');
+    G.combo++;if(G.combo>G.maxCombo)G.maxCombo=G.combo;
+    const mult=G.combo>=FEVAT?FEVM:1;G.score+=BPT*mult;G.destroyed++;E('gsc').textContent=G.score;
+    // ALT
+    const a=altForCorrect(G.combo);G.altEarned+=a;floatN(a);
+    uBI();
+    const idx=G.panels.findIndex(x=>x.id===pan.id);if(idx>=0)G.panels.splice(idx,1);
+    updPC();if(G.panels.length>0)autoSel();else spawnP();
+    setTimeout(()=>pan.el.remove(),250);
   } else {
-    G.streak=0;
-    G.timeLeft=Math.max(0,G.timeLeft-2);
-    E('gt').textContent=Math.max(0,G.timeLeft);
-    btn.classList.add('wrong-flash');panel.el.classList.add('shake');
-    updateBubbleIntensity();
-    setTimeout(()=>{btn.classList.remove('wrong-flash');panel.el.classList.remove('shake');},250);
-    if(G.timeLeft<=0)endGame(true);
+    // WRONG
+    G.combo=0;
+    G.timeLeft=Math.max(0,G.timeLeft-2);E('gt').textContent=Math.max(0,G.timeLeft);
+    btn.classList.add('cng');pan.el.classList.add('shake');
+    uBI();
+    setTimeout(()=>{btn.classList.remove('cng');pan.el.classList.remove('shake');},250);
+    if(G.timeLeft<=0)endG(true);
   }
 }
 
-function endGame(survived){
-  if(!G||G.ended)return;G.ended=true;clearInterval(G.clockTimer);clearTimeout(G.spawnTimer);
-  if(!survived){E('goSub').textContent='パネルが7枚たまった…';E('goOv').classList.add('active');}else{goToResult();}
+function endG(survived){
+  if(!G||G.ended)return;G.ended=true;clearInterval(G.clkTmr);clearTimeout(G.spTmr);
+  if(!survived){E('goS').textContent='パネルが7枚たまった…';E('goOv').classList.add('active');}
+  else toRes();
 }
 
-function goToResult(){
-  E('goOv').classList.remove('active');const s=G.stage;const passed=G.destroyed>=CLEAR_THRESHOLD;
-  if(passed)S.cleared[s.key]=true;if(!S.best[s.key]||G.score>S.best[s.key])S.best[s.key]=G.score;save();
-  show('result');const rank=calcRank(G.score);
-  E('rci').textContent=rank.icon;E('rrank').textContent=rank.label;E('rrank').style.color=rank.color;
-  E('rrank').className=rank.label==='S'?'rc-rank rank-s':'rc-rank';
-  E('rct').textContent=passed?`${s.name} クリア！`:`${s.name}`;
-  E('rcs').textContent=passed?`${CLEAR_THRESHOLD}問撃破でクリア`:`${CLEAR_THRESHOLD}問撃破でクリア（${G.destroyed}問）`;
-  E('rvs').textContent=G.score;E('rvc').textContent=G.destroyed;E('rvk').textContent=G.maxStreak;
-  let msg='';if(G.timeLeft<=0&&passed)msg='60秒生き残った。';
-  else if(G.timeLeft<=0)msg='生き残ったがクリアには足りない。再挑戦。';
-  else msg=`パネルが溢れた。${G.destroyed}問撃破。`;E('rmsg').textContent=msg;
-  if(passed){const all=STAGES.every(st=>S.cleared[st.key]);if(all)setTimeout(()=>E('champ').classList.add('active'),800);}
+function toRes(){
+  E('goOv').classList.remove('active');E('aB').classList.remove('hide');
+  const s=G.stage,d=G.destroyed,sc=G.score;
+  const stars=starRating(sc,d);
+  const passed=d>=CLTH;
+  if(passed)S.cleared[s.key]=true;
+  if(!S.best[s.key]||sc>S.best[s.key])S.best[s.key]=sc;
+
+  // ALT bonuses
+  const details=[];
+  details.push(`正解報酬: +${G.altEarned} ALT`);
+  let bonus=0;
+  if(stars>0){const sb=starBonus(stars);bonus+=sb;details.push(`${'★'.repeat(stars)}${'☆'.repeat(3-stars)} クリアボーナス: +${sb} ALT`);}
+  const isFirst=passed&&!S.fc[s.key];
+  if(isFirst){bonus+=8;details.push(`🎉 初クリアボーナス: +8 ALT`);S.fc[s.key]=true;}
+  const totalEarned=G.altEarned+bonus;
+  S.alt+=totalEarned;
+  updAlt();
+
+  // Rank
+  const rank=calcRank(sc);
+  show('result');
+  E('rci').textContent=rank.icon;
+  E('rrk').textContent=rank.label;E('rrk').style.color=rank.color;
+  E('rrk').className=rank.label==='S'?'rrk rs':'rrk';
+  E('rst').textContent=stars>0?'★'.repeat(stars)+'☆'.repeat(3-stars):'☆☆☆';
+  E('rct').textContent=passed?`${s.name} クリア！`:s.name;
+  E('rcs').textContent=passed?`${CLTH}問撃破でクリア`:`${CLTH}問撃破でクリア（${d}問）`;
+  E('rvs').textContent=sc;E('rvc').textContent=d;E('rvk').textContent=G.maxCombo;
+  E('rae').textContent=`+${totalEarned} ALT`;
+  E('rad').textContent=details.join('\n');
+  E('rat').textContent=`累計: ${S.alt} ALT`;
+  let msg='';if(G.timeLeft<=0&&passed)msg='60秒生き残った！';
+  else if(G.timeLeft<=0)msg='生き残ったがクリアには足りない。再挑戦！';
+  else msg=`パネルが溢れた。${d}問撃破。`;
+  E('rmsg').textContent=msg;
+  if(passed){const all=STG.every(x=>S.cleared[x.key]);if(all)setTimeout(()=>E('champ').classList.add('active'),800);}
 }
 
-function quitGame(){if(!G)return;if(confirm('マップに戻る？')){G.ended=true;clearInterval(G.clockTimer);clearTimeout(G.spawnTimer);showMap();}}
-function retry(){if(G)startGame(G.idx);}
+function qGame(){if(!G)return;if(confirm('マップに戻る？')){G.ended=true;clearInterval(G.clkTmr);clearTimeout(G.spTmr);showMap();}}
+function rty(){if(G)startG(G.idx);}
 
-function calcRank(score){
-  if(score>=300)return{label:'S',icon:'👑',color:'#ff5577'};
-  if(score>=200)return{label:'A',icon:'⭐',color:'#ff8844'};
-  if(score>=130)return{label:'B',icon:'⭐',color:'#44aaff'};
-  if(score>=80)return{label:'C',icon:'🌙',color:'#44dd77'};
+function calcRank(sc){
+  if(sc>=300)return{label:'S',icon:'👑',color:'#ff5577'};
+  if(sc>=200)return{label:'A',icon:'⭐',color:'#ff8844'};
+  if(sc>=130)return{label:'B',icon:'⭐',color:'#44aaff'};
+  if(sc>=80)return{label:'C',icon:'🌙',color:'#44dd77'};
   return{label:'D',icon:'🌙',color:'#7788aa'};
 }
 
-function save(){try{localStorage.setItem('ap2',JSON.stringify(S));}catch(e){}}
-function load(){try{const d=localStorage.getItem('ap2');if(d)S=JSON.parse(d);}catch(e){}}
+// === LINE ===
+function ulb(){
+  const nm=E('lnm').value.trim();
+  E('lbtn').disabled=!(nm&&S.alt>0);
+}
+function slc(){
+  E('lctx').textContent=`⚠️ ${S.alt}ALTを報告してリセットします`;
+  E('lcfm').classList.add('active');
+}
+function doLine(){
+  E('lcfm').classList.remove('active');
+  const nm=E('lnm').value.trim();
+  const clr=STG.filter(s=>S.cleared[s.key]).length;
+  const msg=`【暗算パネル ALT報告】\n名前: ${nm}\n💰 ${S.alt}ALT\nクリア: ${clr}/5ステージ\nベスト: ${Object.values(S.best).length?Math.max(...Object.values(S.best)):0}pt`;
+  const url='https://line.me/R/oaMessage/@trail_official/?'+encodeURIComponent(msg);
+  window.open(url,'_blank');
+  S.alt=0;updAlt();ulb();
+}
 
+// === KEYBOARD ===
 document.addEventListener('keydown',e=>{
   if(!E('game').classList.contains('active')||!G||G.ended)return;
-  const n=parseInt(e.key);if(n>=1&&n<=6){const btns=E('choices').querySelectorAll('.ch');if(btns[n-1])btns[n-1].click();}
+  const n=parseInt(e.key);if(n>=1&&n<=6){const b=E('chs').querySelectorAll('.ch');if(b[n-1])b[n-1].click();}
 });
-
-load();
 </script>
 </body>
 </html>
