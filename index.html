@@ -222,6 +222,30 @@ body{font-family:'Zen Maru Gothic',sans-serif;background:var(--bg);color:var(--t
     <button class="btn btn-lco" onclick="doLine()">OK！送る</button></div></div>
 
 <script>
+// ─── TRAIL ALT・ランキング連携 ───────────────────────────
+const GAS_URL     = 'https://script.google.com/macros/s/AKfycbzKUyiUHIMp9JRFX0LEa88plEoavkbrjTQ5oHf9T-FDd6b4fhqfTCBVBy5rWUZPUQbY/exec';
+const GAME_ID     = 6;
+const GAME_NAME   = '暗算パネル';
+const SCORE_LABEL = 'pt';
+const ALT_AMOUNT  = 10;
+const TRAIL_PLAYER = new URLSearchParams(location.search).get('player') || null;
+
+async function sendResult(score) {
+  if (!TRAIL_PLAYER) return;
+  const opt = { method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'} };
+  await fetch(GAS_URL, { ...opt, body: JSON.stringify({
+    action: 'saveRanking',
+    gameId: GAME_ID, gameName: GAME_NAME,
+    player: TRAIL_PLAYER, score: score, scoreLabel: SCORE_LABEL
+  })});
+  await fetch(GAS_URL, { ...opt, body: JSON.stringify({
+    action: 'addCoin',
+    player: TRAIL_PLAYER, gameId: GAME_ID,
+    gameName: GAME_NAME, amount: ALT_AMOUNT
+  })});
+}
+// ─────────────────────────────────────────────────────────
+
 // === UTIL ===
 function ri(a,b){return~~(Math.random()*(b-a+1))+a;}
 function rc(a){return a[~~(Math.random()*a.length)];}
@@ -410,7 +434,7 @@ function toRes(){
   const s=G.stage,d=G.destroyed,sc=G.score;
   const stars=starRating(sc,d);
   const passed=d>=CLTH;
-  if(passed)S.cleared[s.key]=true;
+  if(passed){S.cleared[s.key]=true;sendResult(sc);}
   if(!S.best[s.key]||sc>S.best[s.key])S.best[s.key]=sc;
 
   // ALT bonuses
