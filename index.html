@@ -243,21 +243,21 @@ for(let i=0;i<5;i++)mB();
 
 // === STAGES ===
 const STG=[
-  {key:'kuku',name:'九九',emoji:'🔴',sub:'1ケタ×1ケタ',desc:'基本のかけ算',color:'#ff5577',
+  {key:'kuku',name:'九九',emoji:'🔴',sub:'1ケタ×1ケタ',desc:'基本のかけ算',color:'#ff5577',diff:'easy',
     gen(){const a=ri(2,9),b=ri(2,9);return{text:`${a} × ${b}`,ans:a*b};}},
-  {key:'big',name:'×10のかけ算',emoji:'🟠',sub:'大きい数のかけ算',desc:'10・100の位',color:'#ff8844',
+  {key:'big',name:'×10のかけ算',emoji:'🟠',sub:'大きい数のかけ算',desc:'10・100の位',color:'#ff8844',diff:'easy',
     gen(){const p=[()=>{const a=rc([10,20,30,40,50,60,70,80,90]),b=ri(2,9);return{text:`${a}×${b}`,ans:a*b};},
       ()=>{const a=rc([100,200,300,400,500]),b=ri(2,9);return{text:`${a}×${b}`,ans:a*b};},
       ()=>{const a=ri(2,9),b=rc([11,12,13,14,15]);return{text:`${a}×${b}`,ans:a*b};},
       ()=>{const a=rc([20,30,40,50]),b=rc([20,30,40,50]);return{text:`${a}×${b}`,ans:a*b};}];return rc(p)();}},
-  {key:'div',name:'わり算',emoji:'🟢',sub:'あまりなしのわり算',desc:'わり切れるわり算',color:'#44dd77',
+  {key:'div',name:'わり算',emoji:'🟢',sub:'あまりなしのわり算',desc:'わり切れるわり算',color:'#44dd77',diff:'normal',
     gen(){const b=ri(2,9),c=ri(2,12),a=b*c;return{text:`${a} ÷ ${b}`,ans:c};}},
-  {key:'rev',name:'逆算・穴うめ',emoji:'🔵',sub:'□を求めよう',desc:'穴うめ計算',color:'#44aaff',
+  {key:'rev',name:'逆算・穴うめ',emoji:'🔵',sub:'□を求めよう',desc:'穴うめ計算',color:'#44aaff',diff:'hard',
     gen(){const t=ri(0,3);if(t===0){const a=ri(2,9),b=ri(2,9);return{text:`□×${b}=${a*b}`,ans:a};}
       if(t===1){const a=ri(2,9),b=ri(2,9);return{text:`${a}×□=${a*b}`,ans:b};}
       if(t===2){const b=ri(2,9),c=ri(2,12);return{text:`${b*c}÷□=${c}`,ans:b};}
       const b=ri(2,9),c=ri(2,9);return{text:`□÷${b}=${c}`,ans:b*c};}},
-  {key:'mix',name:'総合ミックス',emoji:'🟣',sub:'全タイプ混合',desc:'ランダム出題',color:'#aa66ff',
+  {key:'mix',name:'総合ミックス',emoji:'🟣',sub:'全タイプ混合',desc:'ランダム出題',color:'#aa66ff',diff:'hard',
     gen(){return rc([STG[0],STG[1],STG[2],STG[3]]).gen();}}
 ];
 
@@ -266,7 +266,10 @@ let S={cleared:{},best:{},alt:0,fc:{}};
 let G=null;
 
 function floatN(n){
-  const el=document.createElement('div');el.className='float-alt';el.textContent=`+${n}`;
+  if(n===0)return;
+  const el=document.createElement('div');el.className='float-alt';
+  el.textContent=n>0?`+${n}`:`${n}`;
+  if(n<0)el.style.color='var(--dng)';
   el.style.left=(Math.random()*30+35)+'%';el.style.top='38%';
   document.body.appendChild(el);el.addEventListener('animationend',()=>el.remove());
 }
@@ -286,6 +289,11 @@ function makeC(ans){
 function altForCorrect(combo){
   if(combo>=4)return 1;
   return 0;
+}
+function altPenalty(diff){
+  if(diff==='easy')return 3;
+  if(diff==='normal')return 2;
+  return 1; // hard
 }
 function starRating(score,destroyed){
   if(score>=300)return 3;
@@ -314,7 +322,7 @@ function startG(idx){
   const s=STG[idx];
   G={idx,stage:s,panels:[],selId:null,score:0,combo:0,maxCombo:0,destroyed:0,totalQ:0,
     timeLeft:GTIM,spInt:SSMS,spTmr:null,clkTmr:null,nxId:0,ended:false,cIdx:0,
-    altEarned:0,altDetail:[]};
+    altEarned:0,altLost:0,altDetail:[]};
   show('game');E('aB').classList.add('hide');
   E('gi').textContent=`${s.emoji} ${s.name}`;E('gi').style.color=s.color;
   E('gp').innerHTML='';E('gsc').textContent='0';E('gpc').textContent='0';
@@ -382,6 +390,7 @@ function pick(pan,v,btn){
   } else {
     // WRONG
     G.combo=0;
+    const pen=altPenalty(G.stage.diff);G.altLost+=pen;floatN(-pen);
     G.timeLeft=Math.max(0,G.timeLeft-2);E('gt').textContent=Math.max(0,G.timeLeft);
     btn.classList.add('cng');pan.el.classList.add('shake');
     uBI();
@@ -407,12 +416,14 @@ function toRes(){
   // ALT bonuses
   const details=[];
   details.push(`正解報酬: +${G.altEarned} ALT`);
+  if(G.altLost>0) details.push(`不正解ペナルティ: -${G.altLost} ALT`);
   let bonus=0;
   if(stars>0){const sb=starBonus(stars);bonus+=sb;details.push(`${'★'.repeat(stars)}${'☆'.repeat(3-stars)} クリアボーナス: +${sb} ALT`);}
   const isFirst=passed&&!S.fc[s.key];
   if(isFirst){bonus+=8;details.push(`🎉 初クリアボーナス: +8 ALT`);S.fc[s.key]=true;}
-  const totalEarned=G.altEarned+bonus;
-  S.alt+=totalEarned;
+  const netAlt=Math.max(0,G.altEarned-G.altLost+bonus);
+  details.push(`スコア: ${sc}pt`);
+  S.alt+=netAlt;
   updAlt();
 
   // Rank
@@ -425,7 +436,7 @@ function toRes(){
   E('rct').textContent=passed?`${s.name} クリア！`:s.name;
   E('rcs').textContent=passed?`${CLTH}問撃破でクリア`:`${CLTH}問撃破でクリア（${d}問）`;
   E('rvs').textContent=sc;E('rvc').textContent=d;E('rvk').textContent=G.maxCombo;
-  E('rae').textContent=`+${totalEarned} ALT`;
+  E('rae').textContent=`+${netAlt} ALT`;
   E('rad').textContent=details.join('\n');
   E('rat').textContent=`累計: ${S.alt} ALT`;
   let msg='';if(G.timeLeft<=0&&passed)msg='60秒生き残った！';
