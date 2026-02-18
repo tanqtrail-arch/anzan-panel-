@@ -145,7 +145,7 @@ body{font-family:'Zen Maru Gothic',sans-serif;background:var(--bg);color:var(--t
 .chpt{font-family:'Dela Gothic One',sans-serif;font-size:clamp(26px,7vw,44px);color:var(--pr);text-align:center;}
 .chps{font-size:44px;}.chpd{font-size:14px;color:var(--dim);text-align:center;}
 .btn-ch{padding:12px 32px;font-size:16px;background:linear-gradient(180deg,var(--py),#ddaa00);color:#554400;border-radius:50px;box-shadow:0 3px 0 #aa8800;}
-/* TABLET */
+/* TABLET (600px+) */
 @media(min-width:600px){
   .gtop{padding:10px 24px;}.ginf{font-size:16px;}.grt{gap:12px;font-size:14px;}
   .gpan{padding:12px 20px;gap:8px;}.panel{max-width:600px;padding:18px 20px;font-size:34px;border-radius:16px;}
@@ -156,10 +156,57 @@ body{font-family:'Zen Maru Gothic',sans-serif;background:var(--bg);color:var(--t
   .float-alt{font-size:34px;}
   .rc{max-width:520px;padding:32px 28px;}.rrk{font-size:60px;}.rae{font-size:32px;}
 }
-@media(min-width:900px){
-  .grid{grid-template-columns:repeat(3,1fr);}
-  .panel{max-width:680px;font-size:38px;}.choices{max-width:640px;}.ch{font-size:32px;padding:20px 0;}
+/* MEDIUM TABLET (768px+) */
+@media(min-width:768px){
+  #map{padding:28px 32px;gap:20px;padding-bottom:280px;}
+  .grid{grid-template-columns:repeat(2,1fr);max-width:1000px;gap:18px;}
+  .lsec{max-width:1000px;}
+  .panel{max-width:680px;font-size:36px;}.choices{max-width:620px;}.ch{font-size:30px;padding:20px 0;}
 }
+/* LARGE TABLET / iPad 13" (1024px+) */
+@media(min-width:1024px){
+  #map{padding:36px 40px;gap:24px;}
+  .grid{grid-template-columns:repeat(3,1fr);max-width:1100px;gap:20px;}
+  .cd{padding:26px 24px;}.cd-e{font-size:38px;margin-bottom:6px;}.cd-n{font-size:21px;margin-bottom:5px;}
+  .cd-s{font-size:14px;margin-bottom:8px;}.cd-d{font-size:14px;}.cd-b{font-size:13px;}
+  .lsec{max-width:1100px;padding:26px;}.lt{font-size:18px;margin-bottom:14px;}
+  .li{font-size:16px;padding:12px 16px;}.btn-ln{font-size:16px;padding:12px 24px;}.lnt{font-size:13px;}
+  .mt{font-size:clamp(24px,4vw,34px);}.ts{font-size:17px;}
+  .logo{font-size:clamp(52px,8vw,88px);}.tsub{font-size:clamp(14px,2.5vw,20px);}
+  .btn-start{font-size:26px;padding:20px 60px;}
+  .gtop{padding:14px 32px;}.ginf{font-size:18px;}.grt{font-size:16px;gap:16px;}
+  .grt span{padding:6px 14px;}
+  .gpan{padding:16px 28px;gap:10px;}
+  .panel{max-width:800px;padding:22px 28px;font-size:42px;border-radius:18px;}
+  .gbot{padding:14px 28px calc(env(safe-area-inset-bottom,12px) + 10px);}
+  .gsr{gap:12px;margin-bottom:10px;}
+  .btn-sp{font-size:16px;padding:12px 28px;}.btn-qt{font-size:13px;padding:10px 20px;}
+  .choices{max-width:740px;gap:12px;}
+  .ch{font-size:34px;padding:22px 0;border-radius:16px;}
+  .alt-badge{font-size:19px;padding:10px 22px;top:18px;right:18px;gap:7px;}
+  .float-alt{font-size:40px;}
+  #result{padding:28px;gap:20px;}
+  .rc{max-width:640px;padding:40px 36px;border-radius:26px;}
+  .rci{font-size:56px;}.rrk{font-size:68px;letter-spacing:5px;}
+  .rstr{font-size:34px;}.rtt{font-size:24px;}.rsu{font-size:14px;margin-bottom:18px;}
+  .rsts{gap:14px;margin-bottom:18px;}.rsv{font-size:28px;}.rsl{font-size:12px;}
+  .rst{padding:16px 10px;border-radius:14px;}
+  .ralt{padding:18px;border-radius:16px;margin-bottom:18px;}.rae{font-size:36px;}.rad{font-size:13px;}
+  .rmsg{font-size:14px;padding:14px;border-radius:12px;margin-bottom:20px;}
+  .btn-rm,.btn-rr{font-size:16px;padding:14px 34px;}
+  .got{font-size:50px;}.gos{font-size:16px;}.btn-gok{font-size:18px;padding:16px 40px;}
+  .chpt{font-size:clamp(32px,6vw,52px);}.chps{font-size:52px;}.chpd{font-size:16px;}
+  .btn-ch{font-size:18px;padding:14px 38px;}
+  .lct{font-size:22px;}.lcw{font-size:15px;}
+  .btn-lcc,.btn-lco{font-size:16px;padding:12px 30px;}
+}
+/* DESKTOP (1200px+) */
+@media(min-width:1200px){
+  .grid{max-width:1200px;}.lsec{max-width:1200px;}
+  .panel{max-width:860px;font-size:44px;}.choices{max-width:800px;}.ch{font-size:36px;padding:24px 0;}
+  .rc{max-width:700px;padding:44px 40px;}
+}
+/* MOBILE */
 @media(max-width:599px){.grid{grid-template-columns:1fr;}}
 </style>
 </head>
