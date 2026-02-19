@@ -287,14 +287,15 @@ body.bm .alt-badge{background:linear-gradient(135deg,#2a0a2e,#1a0520);color:#ff6
 @keyframes dPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.04);box-shadow:0 3px 0 #7733cc,0 0 20px rgba(153,85,238,.4);}}
 .db-warn{font-size:10px;display:block;opacity:.7;font-weight:400;margin-top:2px;}
 /* Multi-column layout */
-.gpan.mc{flex-direction:row;align-items:flex-end;gap:6px;}
+.gpan.mc{flex-direction:row !important;align-items:stretch;gap:6px;}
 .gcol{flex:1;display:flex;flex-direction:column-reverse;align-items:stretch;gap:5px;min-width:0;
-  border-radius:10px;padding:4px;background:rgba(0,0,0,.03);position:relative;}
-.gcol::after{content:attr(data-cnt);position:absolute;top:4px;right:6px;font-size:9px;font-weight:700;
-  color:var(--dim);opacity:.5;}
+  border-radius:10px;padding:6px 4px;background:rgba(0,0,0,.04);position:relative;
+  border:2px dashed rgba(0,0,0,.08);}
+.gcol::after{content:attr(data-cnt) '/' attr(data-max);position:absolute;top:4px;right:6px;font-size:9px;font-weight:700;
+  color:var(--dim);opacity:.6;}
+#game.boss .gcol{background:rgba(255,50,80,.06);border-color:rgba(255,50,80,.15);}
 .gpan.mc .panel{max-width:none;font-size:clamp(16px,3.5vw,24px);padding:10px 6px;letter-spacing:1px;border-width:2px;}
 .gpan.mc3 .panel{font-size:clamp(13px,2.8vw,18px);padding:8px 4px;letter-spacing:0;}
-#game.boss .gcol{background:rgba(255,50,80,.04);}
 @media(min-width:600px){.gpan.mc .panel{font-size:26px;padding:12px 8px;}.gpan.mc3 .panel{font-size:20px;padding:10px 6px;}}
 @media(min-width:1024px){.gpan.mc .panel{font-size:30px;padding:14px 10px;}.gpan.mc3 .panel{font-size:24px;padding:12px 8px;}}
 </style>
@@ -576,7 +577,7 @@ function startG(idx,diffLv){
   const gp=E('gp');gp.innerHTML='';gp.classList.remove('mc','mc3');
   if(cols>1){
     gp.classList.add('mc');if(cols===3)gp.classList.add('mc3');
-    for(let i=0;i<cols;i++){const c=document.createElement('div');c.className='gcol';c.id='gc'+i;c.dataset.cnt='0';gp.appendChild(c);}
+    for(let i=0;i<cols;i++){const c=document.createElement('div');c.className='gcol';c.id='gc'+i;c.dataset.cnt='0';c.dataset.max=COL_MAX;gp.appendChild(c);}
   }
   E('gsc').textContent='0';E('gpc').textContent='0';E('gpm').textContent=COL_MAX;
   E('gt').textContent=GTIM;E('gtf').style.width='100%';E('gtf').className='gtf';
