@@ -286,6 +286,18 @@ body.bm .alt-badge{background:linear-gradient(135deg,#2a0a2e,#1a0520);color:#ff6
 @keyframes dShake{0%,90%,100%{transform:translateX(0);}92%{transform:translateX(-3px);}94%{transform:translateX(3px);}96%{transform:translateX(-2px);}98%{transform:translateX(1px);}}
 @keyframes dPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.04);box-shadow:0 3px 0 #7733cc,0 0 20px rgba(153,85,238,.4);}}
 .db-warn{font-size:10px;display:block;opacity:.7;font-weight:400;margin-top:2px;}
+/* Multi-column layout */
+.gpan.mc{flex-direction:row !important;align-items:stretch;gap:6px;}
+.gcol{flex:1;display:flex;flex-direction:column-reverse;align-items:stretch;gap:5px;min-width:0;
+  border-radius:10px;padding:6px 4px;background:rgba(0,0,0,.04);position:relative;
+  border:2px dashed rgba(0,0,0,.08);}
+.gcol::after{content:attr(data-cnt) '/' attr(data-max);position:absolute;top:4px;right:6px;font-size:9px;font-weight:700;
+  color:var(--dim);opacity:.6;}
+#game.boss .gcol{background:rgba(255,50,80,.06);border-color:rgba(255,50,80,.15);}
+.gpan.mc .panel{max-width:none;font-size:clamp(16px,3.5vw,24px);padding:10px 6px;letter-spacing:1px;border-width:2px;}
+.gpan.mc3 .panel{font-size:clamp(13px,2.8vw,18px);padding:8px 4px;letter-spacing:0;}
+@media(min-width:600px){.gpan.mc .panel{font-size:26px;padding:12px 8px;}.gpan.mc3 .panel{font-size:20px;padding:10px 6px;}}
+@media(min-width:1024px){.gpan.mc .panel{font-size:30px;padding:14px 10px;}.gpan.mc3 .panel{font-size:24px;padding:12px 8px;}}
 </style>
 </head>
 <body>
@@ -312,10 +324,10 @@ body.bm .alt-badge{background:linear-gradient(135deg,#2a0a2e,#1a0520);color:#ff6
 
 <div id="game" class="screen">
   <div class="gtop"><div class="ginf" id="gi">九九</div>
-    <div class="grt"><span>⏱<span id="gt">60</span></span><span>💰<span id="gsc">0</span></span><span>📦<span id="gpc">0</span>/7</span></div>
+    <div class="grt"><span>⏱<span id="gt">60</span></span><span>💰<span id="gsc">0</span></span><span>📦<span id="gpc">0</span>/<span id="gpm">8</span></span></div>
   </div>
   <div class="gtb"><div class="gtf" id="gtf" style="width:100%"></div></div>
-  <div class="gdz"><div class="gdl"></div><div class="gdlb">▼ 7枚でOUT</div></div>
+  <div class="gdz"><div class="gdl"></div><div class="gdlb" id="gdlt">▼ 8段でOUT</div></div>
   <div class="gpan" id="gp"></div>
   <div class="gbot">
     <div class="gsr"><button class="btn btn-sp" onclick="mSpawn()">＋ パネル追加</button><button class="btn btn-qt" onclick="qGame()">やめる</button></div>
@@ -421,66 +433,48 @@ const DIFF_SMIN=[1200,1000,800,600,500];
 const STG=[
   {key:'kuku',name:'九九',emoji:'🔴',sub:'1ケタ×1ケタ',desc:'基本のかけ算',color:'#ff5577',
     gen(lv){
-      const R=[[2,4,2,4],[2,5,2,5],[2,9,2,9],[6,9,6,9],[2,9,11,19]];
+      // lv3/4: full kuku range (difficulty from columns, not harder problems)
+      const R=[[1,3,1,9],[4,6,1,9],[7,9,1,9],[1,9,1,9],[1,9,1,9]];
       const[a1,a2,b1,b2]=R[lv];const a=ri(a1,a2),b=ri(b1,b2);
       return{text:`${a} × ${b}`,ans:a*b};}},
   {key:'big',name:'×10のかけ算',emoji:'🟠',sub:'大きい数のかけ算',desc:'10・100の位',color:'#ff8844',
     gen(lv){
-      if(lv===0){const a=rc([10,20,30]),b=ri(2,4);return{text:`${a}×${b}`,ans:a*b};}
-      if(lv===1){const p=[
+      const ql=lv>=3?2:lv; // lv3/4 use same problems as lv2
+      if(ql===0){const a=rc([10,20,30]),b=ri(2,4);return{text:`${a}×${b}`,ans:a*b};}
+      if(ql===1){const p=[
         ()=>{const a=rc([10,20,30,40,50]),b=ri(2,5);return{text:`${a}×${b}`,ans:a*b};},
         ()=>{const a=ri(2,5),b=rc([11,12]);return{text:`${a}×${b}`,ans:a*b};}];return rc(p)();}
-      if(lv===2){const p=[
+      const p=[
         ()=>{const a=rc([10,20,30,40,50,60,70,80,90]),b=ri(2,9);return{text:`${a}×${b}`,ans:a*b};},
         ()=>{const a=rc([100,200,300,400,500]),b=ri(2,9);return{text:`${a}×${b}`,ans:a*b};},
         ()=>{const a=ri(2,9),b=rc([11,12,13,14,15]);return{text:`${a}×${b}`,ans:a*b};},
-        ()=>{const a=rc([20,30,40,50]),b=rc([20,30,40,50]);return{text:`${a}×${b}`,ans:a*b};}];return rc(p)();}
-      if(lv===3){const p=[
-        ()=>{const a=rc([100,200,300,400,500]),b=ri(6,9);return{text:`${a}×${b}`,ans:a*b};},
-        ()=>{const a=rc([20,30,40,50,60,70,80,90]),b=rc([20,30,40,50,60,70,80,90]);return{text:`${a}×${b}`,ans:a*b};},
-        ()=>{const a=ri(6,9),b=rc([11,12,13,14,15]);return{text:`${a}×${b}`,ans:a*b};}];return rc(p)();}
-      const p=[
-        ()=>{const a=rc([100,200,300,400,500,600,700,800,900]),b=ri(2,9);return{text:`${a}×${b}`,ans:a*b};},
-        ()=>{const a=rc([50,60,70,80,90]),b=rc([50,60,70,80,90]);return{text:`${a}×${b}`,ans:a*b};},
-        ()=>{const a=ri(11,19),b=ri(11,19);return{text:`${a}×${b}`,ans:a*b};}];return rc(p)();}},
+        ()=>{const a=rc([20,30,40,50]),b=rc([20,30,40,50]);return{text:`${a}×${b}`,ans:a*b};}];return rc(p)();}},
   {key:'div',name:'わり算',emoji:'🟢',sub:'あまりなしのわり算',desc:'わり切れるわり算',color:'#44dd77',
     gen(lv){
-      if(lv===0){const b=ri(2,3),c=ri(2,5),a=b*c;return{text:`${a} ÷ ${b}`,ans:c};}
-      if(lv===1){const b=ri(2,5),c=ri(2,5),a=b*c;return{text:`${a} ÷ ${b}`,ans:c};}
-      if(lv===2){const b=ri(2,9),c=ri(2,12),a=b*c;return{text:`${a} ÷ ${b}`,ans:c};}
-      if(lv===3){const b=ri(2,9),c=ri(5,20),a=b*c;return{text:`${a} ÷ ${b}`,ans:c};}
-      const b=ri(5,12),c=ri(10,25),a=b*c;return{text:`${a} ÷ ${b}`,ans:c};}},
+      const ql=lv>=3?2:lv;
+      if(ql===0){const b=ri(2,3),c=ri(2,5),a=b*c;return{text:`${a} ÷ ${b}`,ans:c};}
+      if(ql===1){const b=ri(2,5),c=ri(2,5),a=b*c;return{text:`${a} ÷ ${b}`,ans:c};}
+      const b=ri(2,9),c=ri(2,12),a=b*c;return{text:`${a} ÷ ${b}`,ans:c};}},
   {key:'rev',name:'逆算・穴うめ',emoji:'🔵',sub:'□を求めよう',desc:'穴うめ計算',color:'#44aaff',
     gen(lv){
-      if(lv===0){const t=ri(0,1);
+      const ql=lv>=3?2:lv;
+      if(ql===0){const t=ri(0,1);
         if(t===0){const a=ri(2,4),b=ri(2,4);return{text:`□×${b}=${a*b}`,ans:a};}
         const a=ri(2,4),b=ri(2,4);return{text:`${a}×□=${a*b}`,ans:b};}
-      if(lv===1){const t=ri(0,2);
+      if(ql===1){const t=ri(0,2);
         if(t===0){const a=ri(2,5),b=ri(2,5);return{text:`□×${b}=${a*b}`,ans:a};}
         if(t===1){const a=ri(2,5),b=ri(2,5);return{text:`${a}×□=${a*b}`,ans:b};}
         const b=ri(2,5),c=ri(2,5);return{text:`${b*c}÷□=${c}`,ans:b};}
-      if(lv===2){const t=ri(0,3);
-        if(t===0){const a=ri(2,9),b=ri(2,9);return{text:`□×${b}=${a*b}`,ans:a};}
-        if(t===1){const a=ri(2,9),b=ri(2,9);return{text:`${a}×□=${a*b}`,ans:b};}
-        if(t===2){const b=ri(2,9),c=ri(2,12);return{text:`${b*c}÷□=${c}`,ans:b};}
-        const b=ri(2,9),c=ri(2,9);return{text:`□÷${b}=${c}`,ans:b*c};}
-      if(lv===3){const t=ri(0,3);
-        if(t===0){const a=ri(3,12),b=ri(3,12);return{text:`□×${b}=${a*b}`,ans:a};}
-        if(t===1){const a=ri(3,12),b=ri(3,12);return{text:`${a}×□=${a*b}`,ans:b};}
-        if(t===2){const b=ri(3,12),c=ri(5,15);return{text:`${b*c}÷□=${c}`,ans:b};}
-        const b=ri(3,12),c=ri(3,12);return{text:`□÷${b}=${c}`,ans:b*c};}
-      const t=ri(0,5);
-      if(t===0){const a=ri(6,15),b=ri(6,15);return{text:`□×${b}=${a*b}`,ans:a};}
-      if(t===1){const a=ri(6,15),b=ri(6,15);return{text:`${a}×□=${a*b}`,ans:b};}
-      if(t===2){const b=ri(5,15),c=ri(10,20);return{text:`${b*c}÷□=${c}`,ans:b};}
-      if(t===3){const b=ri(5,15),c=ri(5,15);return{text:`□÷${b}=${c}`,ans:b*c};}
-      if(t===4){const a=ri(10,50),b=ri(10,50);return{text:`□+${b}=${a+b}`,ans:a};}
-      const a=ri(20,80),b=ri(10,40);return{text:`□-${b}=${a-b}`,ans:a};}},
+      const t=ri(0,3);
+      if(t===0){const a=ri(2,9),b=ri(2,9);return{text:`□×${b}=${a*b}`,ans:a};}
+      if(t===1){const a=ri(2,9),b=ri(2,9);return{text:`${a}×□=${a*b}`,ans:b};}
+      if(t===2){const b=ri(2,9),c=ri(2,12);return{text:`${b*c}÷□=${c}`,ans:b};}
+      const b=ri(2,9),c=ri(2,9);return{text:`□÷${b}=${c}`,ans:b*c};}},
   {key:'mix',name:'総合ミックス',emoji:'🟣',sub:'全タイプ混合',desc:'ランダム出題',color:'#aa66ff',
     gen(lv){return rc([STG[0],STG[1],STG[2],STG[3]]).gen(lv);}}
 ];
 
-const MXP=7,GTIM=60,SACC=250,BPT=10,FEVAT=3,FEVM=2,CLTH=15,PCC=6;
+const COL_MAX=8,DIFF_COLS=[1,1,1,2,3],GTIM=60,SACC=250,BPT=10,FEVAT=3,FEVM=2,CLTH=15,PCC=6;
 let S={cleared:{},best:{},alt:0,fc:{},dc:{}};
 let G=null;
 
@@ -572,14 +566,22 @@ function startG(idx,diffLv){
   if(diffLv===undefined)diffLv=2;
   cleanBoss();
   const s=STG[idx];const ssms=DIFF_SSMS[diffLv],smin=DIFF_SMIN[diffLv];
-  G={idx,stage:s,diffLv,panels:[],selId:null,score:0,combo:0,maxCombo:0,destroyed:0,totalQ:0,
+  const cols=DIFF_COLS[diffLv];
+  const colPans=[];for(let i=0;i<cols;i++)colPans.push([]);
+  G={idx,stage:s,diffLv,cols,colPans,panels:[],selId:null,score:0,combo:0,maxCombo:0,destroyed:0,totalQ:0,
     timeLeft:GTIM,spInt:ssms,smin,spTmr:null,clkTmr:null,nxId:0,ended:false,cIdx:0,
     altEarned:0,altLost:0,altDetail:[]};
   show('game');E('aB').classList.add('hide');
   const dn=DIFFS[diffLv].name;
   E('gi').textContent=`${s.emoji} ${s.name}【${dn}】`;E('gi').style.color=s.color;
-  E('gp').innerHTML='';E('gsc').textContent='0';E('gpc').textContent='0';
+  const gp=E('gp');gp.innerHTML='';gp.classList.remove('mc','mc3');
+  if(cols>1){
+    gp.classList.add('mc');if(cols===3)gp.classList.add('mc3');
+    for(let i=0;i<cols;i++){const c=document.createElement('div');c.className='gcol';c.id='gc'+i;c.dataset.cnt='0';c.dataset.max=COL_MAX;gp.appendChild(c);}
+  }
+  E('gsc').textContent='0';E('gpc').textContent='0';E('gpm').textContent=COL_MAX;
   E('gt').textContent=GTIM;E('gtf').style.width='100%';E('gtf').className='gtf';
+  E('gdlt').textContent=cols>1?`▼ ${COL_MAX}段でOUT`:`▼ ${COL_MAX}段でOUT`;
   E('goOv').classList.remove('active');E('chs').innerHTML='';
   const isBoss=diffLv>=3;
   if(isBoss){
@@ -617,14 +619,27 @@ function schedSp(){
 function spawnP(){
   if(!G||G.ended)return;
   const q=G.stage.gen(G.diffLv),id=G.nxId++,ch=makeC(q.ans),ci=G.cIdx%PCC;G.cIdx++;
-  const pan={id,text:q.text,ans:q.ans,choices:ch,el:null,done:false};
+  // Find column with fewest panels
+  let col=0;
+  if(G.cols>1){let mn=G.colPans[0].length;for(let i=1;i<G.cols;i++){if(G.colPans[i].length<mn){mn=G.colPans[i].length;col=i;}}}
+  const pan={id,text:q.text,ans:q.ans,choices:ch,el:null,done:false,col};
   const el=document.createElement('div');el.className=`panel pc${ci}`;el.textContent=q.text;
   el.onclick=()=>selP(id);pan.el=el;
-  G.panels.push(pan);E('gp').appendChild(el);updPC();autoSel();
-  if(G.panels.length>=MXP)endG(false);
+  G.panels.push(pan);
+  if(G.cols>1){G.colPans[col].push(pan);const ce=E('gc'+col);ce.appendChild(el);ce.dataset.cnt=G.colPans[col].length;}
+  else E('gp').appendChild(el);
+  updPC();autoSel();
+  // Check game over: any column >= COL_MAX
+  if(G.cols>1){if(G.colPans.some(c=>c.length>=COL_MAX))endG(false);}
+  else{if(G.panels.length>=COL_MAX)endG(false);}
 }
 
-function mSpawn(){if(!G||G.ended||G.panels.length>=MXP-1)return;spawnP();}
+function mSpawn(){
+  if(!G||G.ended)return;
+  if(G.cols>1){const mn=Math.min(...G.colPans.map(c=>c.length));if(mn>=COL_MAX-1)return;}
+  else{if(G.panels.length>=COL_MAX-1)return;}
+  spawnP();
+}
 function autoSel(){if(!G||!G.panels.length)return;selP(G.panels[0].id);}
 
 function selP(id){
@@ -634,7 +649,11 @@ function selP(id){
   if(p){p.el.classList.add('sel');renC(p);}
 }
 
-function updPC(){if(G)E('gpc').textContent=G.panels.length;}
+function updPC(){
+  if(!G)return;
+  if(G.cols>1){const mx=Math.max(...G.colPans.map(c=>c.length));E('gpc').textContent=mx;}
+  else E('gpc').textContent=G.panels.length;
+}
 
 function renC(pan){
   const w=E('chs');w.innerHTML='';
@@ -654,6 +673,8 @@ function pick(pan,v,btn){
     // ALT
     const a=altForCorrect(G.combo);G.altEarned+=a;floatN(a);
     uBI();
+    if(G.cols>1){const ci=pan.col,cx=G.colPans[ci].findIndex(x=>x.id===pan.id);
+      if(cx>=0)G.colPans[ci].splice(cx,1);E('gc'+ci).dataset.cnt=G.colPans[ci].length;}
     const idx=G.panels.findIndex(x=>x.id===pan.id);if(idx>=0)G.panels.splice(idx,1);
     updPC();if(G.panels.length>0)autoSel();else spawnP();
     setTimeout(()=>pan.el.remove(),250);
@@ -671,7 +692,7 @@ function pick(pan,v,btn){
 
 function endG(survived){
   if(!G||G.ended)return;G.ended=true;clearInterval(G.clkTmr);clearTimeout(G.spTmr);
-  if(!survived){E('goS').textContent='パネルが7枚たまった…';E('goOv').classList.add('active');}
+  if(!survived){E('goS').textContent=G.cols>1?'列が8段に達した…':'パネルが8段たまった…';E('goOv').classList.add('active');}
   else toRes();
 }
 
@@ -713,7 +734,7 @@ function toRes(){
   E('rat').textContent=`累計: ${S.alt} ALT`;
   let msg='';if(G.timeLeft<=0&&passed)msg='60秒生き残った！';
   else if(G.timeLeft<=0)msg='生き残ったがクリアには足りない。再挑戦！';
-  else msg=`パネルが溢れた。${d}問撃破。`;
+  else msg=G.cols>1?`列が溢れた。${d}問撃破。`:`パネルが溢れた。${d}問撃破。`;
   E('rmsg').textContent=msg;
   if(passed){const all=STG.every(x=>S.cleared[x.key]);if(all)setTimeout(()=>E('champ').classList.add('active'),800);}
 }
