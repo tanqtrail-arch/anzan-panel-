@@ -87,7 +87,15 @@ body{font-family:'Zen Maru Gothic',sans-serif;background:var(--bg);color:var(--t
 .panel.pc0{background:linear-gradient(180deg,#ff8899,#ff5577);}.panel.pc1{background:linear-gradient(180deg,#66bbff,#3399ee);}
 .panel.pc2{background:linear-gradient(180deg,#66ee88,#33bb55);}.panel.pc3{background:linear-gradient(180deg,#ffdd55,#eebb00);color:#665500;text-shadow:0 1px 0 rgba(255,255,255,.4);}
 .panel.pc4{background:linear-gradient(180deg,#bb88ff,#9955ee);}.panel.pc5{background:linear-gradient(180deg,#ffaa66,#ee7733);}
-.panel.sel{border-color:#fff;box-shadow:inset 0 2px 0 rgba(255,255,255,.4),inset 0 -3px 0 rgba(0,0,0,.1),0 0 0 4px rgba(68,170,255,.3),0 4px 0 rgba(0,0,0,.08);}
+.panel.sel{border-color:#fff;transform:scale(1.04);z-index:10;
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.4),inset 0 -3px 0 rgba(0,0,0,.1),
+    0 0 0 4px rgba(68,170,255,.5),0 0 16px rgba(68,170,255,.4),0 4px 0 rgba(0,0,0,.08);
+  animation:selPulse 1s ease-in-out infinite alternate;}
+@keyframes selPulse{0%{box-shadow:inset 0 2px 0 rgba(255,255,255,.4),inset 0 -3px 0 rgba(0,0,0,.1),
+  0 0 0 4px rgba(68,170,255,.5),0 0 12px rgba(68,170,255,.3),0 4px 0 rgba(0,0,0,.08);}
+  100%{box-shadow:inset 0 2px 0 rgba(255,255,255,.4),inset 0 -3px 0 rgba(0,0,0,.1),
+  0 0 0 5px rgba(68,170,255,.7),0 0 24px rgba(68,170,255,.5),0 4px 0 rgba(0,0,0,.08);}}
+.panel:not(.sel):not(.shatter){opacity:.5;filter:brightness(.8);transform:scale(.96);}
 .panel:active{transform:scale(.97);}
 @keyframes pR{0%{transform:translateY(50px);opacity:0;}100%{transform:translateY(0);opacity:1;}}
 .panel.shatter{animation:pP .3s ease-out forwards;pointer-events:none;}
@@ -96,6 +104,12 @@ body{font-family:'Zen Maru Gothic',sans-serif;background:var(--bg);color:var(--t
 @keyframes sk{0%,100%{transform:translateX(0);}25%{transform:translateX(-8px);}50%{transform:translateX(8px);}75%{transform:translateX(-5px);}}
 .gbot{width:100%;flex-shrink:0;z-index:20;background:var(--bot);backdrop-filter:blur(8px);
   border-top:1px solid rgba(0,0,0,.06);padding:6px 8px calc(env(safe-area-inset-bottom,6px) + 4px);}
+.gnow{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:4px;
+  padding:5px 12px;border-radius:10px;background:linear-gradient(90deg,rgba(68,170,255,.1),rgba(68,170,255,.05));
+  border:1.5px solid rgba(68,170,255,.25);}
+.gnow-l{font-size:10px;color:var(--pb);animation:nowBlink .8s ease-in-out infinite alternate;}
+@keyframes nowBlink{0%{opacity:.4;}100%{opacity:1;}}
+.gnow-t{font-family:'Dela Gothic One',sans-serif;font-size:clamp(15px,3.5vw,20px);color:var(--pb);letter-spacing:2px;}
 .gsr{display:flex;justify-content:center;margin-bottom:5px;gap:6px;}
 .btn-sp{padding:6px 14px;font-size:11px;border-radius:20px;background:linear-gradient(180deg,#ddeeff,#ccddff);color:var(--pb);border:1px solid rgba(68,170,255,.3);font-weight:700;}
 .btn-qt{padding:6px 12px;font-size:10px;border-radius:20px;background:rgba(0,0,0,.04);color:var(--dim);}
@@ -150,6 +164,7 @@ body{font-family:'Zen Maru Gothic',sans-serif;background:var(--bg);color:var(--t
   .gtop{padding:10px 24px;}.ginf{font-size:16px;}.grt{gap:12px;font-size:14px;}
   .gpan{padding:12px 20px;gap:8px;}.panel{max-width:600px;padding:18px 20px;font-size:34px;border-radius:16px;}
   .gbot{padding:8px 16px calc(env(safe-area-inset-bottom,8px) + 6px);}
+  .gnow{padding:6px 16px;margin-bottom:5px;}.gnow-t{font-size:22px;}
   .gsr{margin-bottom:6px;gap:8px;}
   .choices{max-width:560px;gap:8px;}.ch{font-size:24px;padding:14px 0;border-radius:12px;border-width:3px;}
   .btn-sp{font-size:13px;padding:8px 20px;}.btn-qt{font-size:12px;padding:8px 16px;}
@@ -180,6 +195,7 @@ body{font-family:'Zen Maru Gothic',sans-serif;background:var(--bg);color:var(--t
   .gpan{padding:16px 28px;gap:10px;}
   .panel{max-width:800px;padding:22px 28px;font-size:42px;border-radius:18px;}
   .gbot{padding:10px 24px calc(env(safe-area-inset-bottom,10px) + 8px);}
+  .gnow{padding:7px 20px;margin-bottom:6px;}.gnow-t{font-size:26px;letter-spacing:3px;}
   .gsr{gap:10px;margin-bottom:8px;}
   .btn-sp{font-size:15px;padding:10px 24px;}.btn-qt{font-size:12px;padding:8px 18px;}
   .choices{max-width:740px;gap:10px;}
@@ -215,6 +231,7 @@ body{font-family:'Zen Maru Gothic',sans-serif;background:var(--bg);color:var(--t
   .gtb{height:4px;}.gdz{height:2px;}
   .gpan{padding:4px 8px;gap:4px;}.panel{padding:6px 8px;font-size:18px;border-radius:8px;}
   .gbot{padding:4px 6px calc(env(safe-area-inset-bottom,2px) + 2px);}
+  .gnow{padding:3px 8px;margin-bottom:2px;}.gnow-t{font-size:13px;}.gnow-l{font-size:8px;}
   .gsr{margin-bottom:3px;gap:4px;}.btn-sp{padding:4px 10px;font-size:10px;}.btn-qt{padding:4px 8px;font-size:9px;}
   .choices{gap:3px;}.ch{padding:6px 0;font-size:14px;border-radius:8px;border-width:2px;}
 }
@@ -300,7 +317,9 @@ body.bm .alt-badge{background:linear-gradient(135deg,#2a0a2e,#1a0520);color:#ff6
 .gpan.mc{flex-direction:row !important;align-items:stretch;gap:6px;}
 .gcol{flex:1;display:flex;flex-direction:column-reverse;align-items:stretch;gap:5px;min-width:0;
   border-radius:10px;padding:6px 4px;background:rgba(0,0,0,.04);position:relative;
-  border:2px dashed rgba(0,0,0,.08);}
+  border:2px dashed rgba(0,0,0,.08);transition:all .2s;}
+.gcol-act{background:rgba(68,170,255,.08);border-color:rgba(68,170,255,.3);
+  box-shadow:0 0 12px rgba(68,170,255,.15);}
 .gcol::after{content:attr(data-cnt) '/' attr(data-max);position:absolute;top:4px;right:6px;font-size:9px;font-weight:700;
   color:var(--dim);opacity:.6;}
 #game.boss .gcol{background:rgba(255,50,80,.06);border-color:rgba(255,50,80,.15);}
@@ -340,6 +359,7 @@ body.bm .alt-badge{background:linear-gradient(135deg,#2a0a2e,#1a0520);color:#ff6
   <div class="gdz"><div class="gdl"></div><div class="gdlb" id="gdlt">▼ 8段でOUT</div></div>
   <div class="gpan" id="gp"></div>
   <div class="gbot">
+    <div class="gnow" id="gnow"><span class="gnow-l">▶</span><span class="gnow-t" id="gnowT">-</span></div>
     <div class="gsr"><button class="btn btn-sp" onclick="mSpawn()">＋ パネル追加</button><button class="btn btn-qt" onclick="qGame()">やめる</button></div>
     <div class="choices" id="chs"></div>
   </div>
@@ -650,13 +670,23 @@ function mSpawn(){
   else{if(G.panels.length>=COL_MAX-1)return;}
   spawnP();
 }
-function autoSel(){if(!G||!G.panels.length)return;selP(G.panels[0].id);}
+function autoSel(){
+  if(!G||!G.panels.length)return;
+  // Keep current selection if it's still valid
+  if(G.selId!==null&&G.panels.find(x=>x.id===G.selId))return;
+  selP(G.panels[0].id);
+}
 
 function selP(id){
   if(!G||G.ended)return;
   G.panels.forEach(p=>p.el.classList.remove('sel'));
+  if(G.cols>1)document.querySelectorAll('.gcol').forEach(c=>c.classList.remove('gcol-act'));
   G.selId=id;const p=G.panels.find(x=>x.id===id);
-  if(p){p.el.classList.add('sel');renC(p);}
+  if(p){
+    p.el.classList.add('sel');renC(p);
+    E('gnowT').textContent=p.text;
+    if(G.cols>1){const ce=E('gc'+p.col);if(ce)ce.classList.add('gcol-act');}
+  }
 }
 
 function updPC(){
