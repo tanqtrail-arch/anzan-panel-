@@ -4,14 +4,30 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>暗算パネル</title>
+<link rel="stylesheet" href="https://trail-game-pro.onrender.com/sdk/trail-auth.css">
+<script src="https://trail-game-pro.onrender.com/sdk/trail-sdk.js"></script>
+<script src="https://trail-game-pro.onrender.com/sdk/trail-auth.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=M+PLUS+Rounded+1c:wght@400;700;900&family=Zen+Maru+Gothic:wght@400;700;900&display=swap');
 :root{--bg:#e8f4ff;--pr:#ff5577;--pb:#44aaff;--pg:#44dd77;--py:#ffcc22;--pp:#aa66ff;--po:#ff8844;
   --txt:#334;--dim:#7788aa;--dng:#ff3355;--ok:#22cc66;--card:rgba(255,255,255,.85);--bot:rgba(255,255,255,.92);
   --alt:#22bb55;--altbg:linear-gradient(135deg,#e8ffe8,#d0f5d0);}
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Zen Maru Gothic',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overflow:hidden;
+body{font-family:'M PLUS Rounded 1c','Zen Maru Gothic',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overflow:hidden;
   user-select:none;-webkit-user-select:none;touch-action:manipulation;}
+/* PIN Screen */
+#pinScreen{display:flex;position:fixed;inset:0;z-index:9999;background:linear-gradient(180deg,#d4ecff,#e8f4ff,#f0e8ff);
+  justify-content:center;align-items:center;flex-direction:column;gap:20px;}
+#pinScreen.hide{display:none;}
+.pin-card{background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-radius:12px;padding:36px 32px;
+  text-align:center;max-width:380px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.1);border:2px solid rgba(0,0,0,.06);}
+.pin-title{font-family:'Dela Gothic One',sans-serif;font-size:24px;color:#1a73e8;margin-bottom:6px;}
+.pin-sub{font-size:13px;color:var(--dim);margin-bottom:20px;}
+/* Player badge */
+.player-badge{display:inline-flex;align-items:center;gap:6px;background:#1a73e8;color:#fff;
+  padding:6px 16px;border-radius:12px;font-family:'M PLUS Rounded 1c','Zen Maru Gothic',sans-serif;
+  font-weight:700;font-size:14px;box-shadow:0 2px 8px rgba(26,115,232,.25);z-index:2;}
+.player-badge.hide{display:none;}
 .bubbles{position:fixed;inset:0;pointer-events:none;z-index:999;overflow:hidden;}
 .bubble{position:absolute;border-radius:50%;opacity:.3;animation:fU linear infinite;}
 @keyframes fU{0%{transform:translateY(100vh) scale(.3);opacity:0;}10%{opacity:.3;}90%{opacity:.25;}100%{transform:translateY(-10vh) scale(1);opacity:0;}}
@@ -29,7 +45,7 @@ body{font-family:'Zen Maru Gothic',sans-serif;background:var(--bg);color:var(--t
 .logo span{display:inline-block;filter:drop-shadow(0 3px 0 rgba(0,0,0,.1));}
 .logo .l1{color:var(--pr);}.logo .l2{color:var(--py);}.logo .l3{color:var(--pg);}.logo .l4{color:var(--pb);}.logo .l5{color:var(--pp);}
 .tsub{font-size:clamp(12px,3vw,16px);color:var(--dim);z-index:2;text-align:center;letter-spacing:2px;}
-.btn{font-family:'Zen Maru Gothic',sans-serif;font-weight:900;border:none;border-radius:12px;cursor:pointer;transition:all .12s;letter-spacing:1px;}
+.btn{font-family:'M PLUS Rounded 1c','Zen Maru Gothic',sans-serif;font-weight:900;border:none;border-radius:12px;cursor:pointer;transition:all .12s;letter-spacing:1px;}
 .btn:active{transform:scale(.94);}
 .btn-start{font-size:22px;padding:16px 52px;z-index:2;background:linear-gradient(180deg,#ff7799,#ff5577);color:#fff;border-radius:50px;box-shadow:0 4px 0 #cc3355,0 8px 24px rgba(255,85,119,.25);}
 #map{padding:20px;gap:16px;overflow-y:auto;background:linear-gradient(180deg,#d4ecff,var(--bg));padding-bottom:280px;}
@@ -52,7 +68,7 @@ body{font-family:'Zen Maru Gothic',sans-serif;background:var(--bg);color:var(--t
 .lt{font-family:'Dela Gothic One',sans-serif;font-size:16px;margin-bottom:12px;}
 .lr{display:flex;gap:8px;margin-bottom:10px;align-items:center;flex-wrap:wrap;}
 .li{flex:1;min-width:120px;padding:10px 14px;border-radius:12px;border:2px solid rgba(0,0,0,.08);
-  font-family:'Zen Maru Gothic',sans-serif;font-size:14px;background:#fff;color:var(--txt);outline:none;}
+  font-family:'M PLUS Rounded 1c','Zen Maru Gothic',sans-serif;font-size:14px;background:#fff;color:var(--txt);outline:none;}
 .li:focus{border-color:var(--pb);}
 .btn-ln{padding:10px 20px;font-size:14px;border-radius:12px;background:linear-gradient(180deg,#44cc66,#22aa44);color:#fff;box-shadow:0 3px 0 #118833;}
 .btn-ln:disabled{background:#ccc;color:#999;box-shadow:none;cursor:not-allowed;transform:none;}
@@ -217,7 +233,7 @@ body{font-family:'Zen Maru Gothic',sans-serif;background:var(--bg);color:var(--t
 .diff-tt{font-family:'Dela Gothic One',sans-serif;font-size:24px;margin-bottom:4px;}
 .diff-sb{font-size:13px;color:var(--dim);margin-bottom:20px;}
 .diff-bs{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
-.diff-b{font-family:'Zen Maru Gothic',sans-serif;font-weight:900;border:none;border-radius:14px;padding:14px 20px;
+.diff-b{font-family:'M PLUS Rounded 1c','Zen Maru Gothic',sans-serif;font-weight:900;border:none;border-radius:14px;padding:14px 20px;
   cursor:pointer;transition:all .12s;display:flex;align-items:center;justify-content:space-between;
   font-size:15px;color:#fff;letter-spacing:1px;}
 .diff-b:active{transform:scale(.96);}
@@ -228,7 +244,7 @@ body{font-family:'Zen Maru Gothic',sans-serif;background:var(--bg);color:var(--t
 .diff-b.dl2{background:linear-gradient(135deg,#ffdd55,#eebb00);box-shadow:0 3px 0 #cc9900;color:#665500;}
 .diff-b.dl3{background:linear-gradient(135deg,#ff8899,#ff5577);box-shadow:0 3px 0 #cc3355;}
 .diff-b.dl4{background:linear-gradient(135deg,#bb88ff,#9955ee);box-shadow:0 3px 0 #7733cc;}
-.diff-bk{font-family:'Zen Maru Gothic',sans-serif;font-weight:700;border:none;border-radius:50px;padding:10px 28px;
+.diff-bk{font-family:'M PLUS Rounded 1c','Zen Maru Gothic',sans-serif;font-weight:700;border:none;border-radius:50px;padding:10px 28px;
   cursor:pointer;background:rgba(0,0,0,.06);color:var(--dim);font-size:13px;transition:all .12s;}
 .diff-bk:active{transform:scale(.95);}
 .cd-ds{display:flex;gap:4px;margin-top:8px;}
@@ -301,12 +317,14 @@ body.bm .alt-badge{background:linear-gradient(135deg,#2a0a2e,#1a0520);color:#ff6
 </style>
 </head>
 <body>
+<div id="pinScreen"></div>
 <div class="bubbles" id="bub"></div>
 <div class="alt-badge" id="aB">🪙 <span id="aT">0</span> ALT</div>
 
 <div id="title" class="screen active">
   <div class="logo"><span class="l1">暗</span><span class="l2">算</span><br><span class="l3">パ</span><span class="l4">ネ</span><span class="l5">ル</span></div>
   <div class="tsub">パネルを暗算で撃破せよ！</div>
+  <div class="player-badge hide" id="playerBadge"></div>
   <button class="btn btn-start" onclick="showMap()">START</button>
 </div>
 
@@ -375,28 +393,9 @@ body.bm .alt-badge{background:linear-gradient(135deg,#2a0a2e,#1a0520);color:#ff6
 </div>
 
 <script>
-// ─── TRAIL ALT・ランキング連携 ───────────────────────────
-const GAS_URL     = 'https://script.google.com/macros/s/AKfycbzKUyiUHIMp9JRFX0LEa88plEoavkbrjTQ5oHf9T-FDd6b4fhqfTCBVBy5rWUZPUQbY/exec';
-const GAME_ID     = 6;
-const GAME_NAME   = '暗算パネル';
-const SCORE_LABEL = 'pt';
-const ALT_AMOUNT  = 10;
-const TRAIL_PLAYER = new URLSearchParams(location.search).get('player') || null;
-
-async function sendResult(score) {
-  if (!TRAIL_PLAYER) return;
-  const opt = { method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'} };
-  await fetch(GAS_URL, { ...opt, body: JSON.stringify({
-    action: 'saveRanking',
-    gameId: GAME_ID, gameName: GAME_NAME,
-    player: TRAIL_PLAYER, score: score, scoreLabel: SCORE_LABEL
-  })});
-  await fetch(GAS_URL, { ...opt, body: JSON.stringify({
-    action: 'addCoin',
-    player: TRAIL_PLAYER, gameId: GAME_ID,
-    gameName: GAME_NAME, amount: ALT_AMOUNT
-  })});
-}
+// ─── TRAIL Game Pro 3.2 SDK ──────────────────────────────
+let sdk = null;
+let trailPlayerName = null;
 // ─────────────────────────────────────────────────────────
 
 // === UTIL ===
@@ -406,6 +405,56 @@ function E(id){return document.getElementById(id);}
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));E(id).classList.add('active');}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=ri(0,i);[a[i],a[j]]=[a[j],a[i]];}return a;}
 function updAlt(){E('aT').textContent=S.alt;}
+
+// === TRAIL SDK INIT & PIN AUTH ===
+function showPlayerBadge(name) {
+  const badge = E('playerBadge');
+  badge.textContent = name;
+  badge.classList.remove('hide');
+}
+(function initTrailSDK() {
+  try {
+    if (typeof TrailSDK === 'function') {
+      sdk = TrailSDK({ gameId: 4, tenantSlug: "trail" });
+    }
+  } catch (e) { sdk = null; }
+})();
+(async function handleAuth() {
+  const params = new URLSearchParams(location.search);
+  const token = params.get('token');
+  if (token) {
+    E('pinScreen').classList.add('hide');
+    try {
+      if (sdk) {
+        trailPlayerName = await sdk.getPlayerName();
+        if (trailPlayerName) showPlayerBadge(trailPlayerName);
+      }
+    } catch (e) { /* fallback */ }
+    return;
+  }
+  try {
+    if (typeof TrailAuth === 'function' && sdk) {
+      TrailAuth(E('pinScreen'), {
+        gameId: 4,
+        tenantSlug: "trail",
+        onSuccess: async function() {
+          E('pinScreen').classList.add('hide');
+          try {
+            trailPlayerName = await sdk.getPlayerName();
+            if (trailPlayerName) showPlayerBadge(trailPlayerName);
+          } catch (e) { /* fallback */ }
+        },
+        onError: function() {
+          E('pinScreen').classList.add('hide');
+        }
+      });
+    } else {
+      E('pinScreen').classList.add('hide');
+    }
+  } catch (e) {
+    E('pinScreen').classList.add('hide');
+  }
+})();
 
 // === BUBBLES ===
 const BC=['#ff5577','#44aaff','#44dd77','#ffcc22','#aa66ff','#ff8844'],bC=E('bub');
@@ -565,6 +614,7 @@ function cleanBoss(){
 function startG(idx,diffLv){
   if(diffLv===undefined)diffLv=2;
   cleanBoss();
+  try { if (sdk) sdk.startSession(); } catch (e) { /* fallback */ }
   const s=STG[idx];const ssms=DIFF_SSMS[diffLv],smin=DIFF_SMIN[diffLv];
   const cols=DIFF_COLS[diffLv];
   const colPans=[];for(let i=0;i<cols;i++)colPans.push([]);
@@ -696,14 +746,23 @@ function endG(survived){
   else toRes();
 }
 
-function toRes(){
+async function toRes(){
   E('goOv').classList.remove('active');E('aB').classList.remove('hide');cleanBoss();
   const s=G.stage,d=G.destroyed,sc=G.score,dl=G.diffLv;
   const bk=s.key+'_'+dl;
   const stars=starRating(sc,d);
   const passed=d>=CLTH;
-  if(passed){S.cleared[s.key]=true;S.dc[bk]=true;sendResult(sc);}
+  if(passed){S.cleared[s.key]=true;S.dc[bk]=true;}
   if(!S.best[bk]||sc>S.best[bk])S.best[bk]=sc;
+  // TRAIL SDK endSession
+  try {
+    if (sdk) {
+      const result = await sdk.endSession({ score: sc, correct: d, total: G.totalQ });
+      if (result && typeof result.alt === 'number') {
+        sdk.showAltPopup(result.alt);
+      }
+    }
+  } catch (e) { /* fallback */ }
 
   // ALT bonuses
   const details=[];
