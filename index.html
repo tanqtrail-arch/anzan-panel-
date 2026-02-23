@@ -4,9 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>暗算パネル</title>
-<link rel="stylesheet" href="https://trail-game-pro.onrender.com/sdk/trail-auth.css">
-<script src="https://trail-game-pro.onrender.com/sdk/trail-sdk.js"></script>
-<script src="https://trail-game-pro.onrender.com/sdk/trail-auth.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=M+PLUS+Rounded+1c:wght@400;700;900&family=Zen+Maru+Gothic:wght@400;700;900&display=swap');
 :root{--bg:#e8f4ff;--pr:#ff5577;--pb:#44aaff;--pg:#44dd77;--py:#ffcc22;--pp:#aa66ff;--po:#ff8844;
@@ -337,7 +334,7 @@ body.bm .alt-badge{background:linear-gradient(135deg,#2a0a2e,#1a0520);color:#ff6
   </div>
   <div class="ralt"><div class="rae" id="rae"></div><div class="rad" id="rad"></div><div class="rat" id="rat"></div></div>
   <div class="rmsg" id="rmsg"></div>
-  <div class="rbtns"><button class="btn btn-rm" onclick="showMap()">マップへ</button><button class="btn btn-rr" onclick="rty()">もう一度</button></div>
+  <div class="rbtns"><button class="btn btn-rm" onclick="showMap()">マップへ</button><button class="btn btn-rr" onclick="rty()">もう一度</button><button class="btn btn-rr" onclick="goHome()">🏠 ホームに戻る</button></div>
 </div></div>
 
 <div class="champ" id="champ"><div class="chps">⭐⭐⭐⭐⭐</div><div class="chpt">暗算マスター！</div>
@@ -361,14 +358,20 @@ body.bm .alt-badge{background:linear-gradient(135deg,#2a0a2e,#1a0520);color:#ff6
 </div>
 
 <script>
-// ─── TRAIL Game Pro 3.2 SDK ──────────────────────────────
-let sdk = null;
-let trailPlayerName = null;
+// ─── TRAIL GP3 連携 ───
 const TRAIL_API = 'https://trail-game-pro-3-2.onrender.com';
 const TRAIL_PLAYER = new URLSearchParams(location.search).get('player') || null;
 
+function calcAlt(score) {
+  if (score >= 1000) return 30;
+  if (score >= 500)  return 20;
+  if (score >= 100)  return 10;
+  return 5;
+}
+
 async function sendResultToTrail(score) {
-  if (!TRAIL_PLAYER) return;
+  if (!TRAIL_PLAYER) return 0;
+  const alt = calcAlt(score);
   try {
     await fetch(`${TRAIL_API}/api/external/game-result`, {
       method: 'POST',
@@ -378,14 +381,20 @@ async function sendResultToTrail(score) {
         game_id: 'anzan-panel',
         game_name: '暗算パネル',
         score: score,
-        alt: 10
+        alt: alt
       })
     });
   } catch (e) {
     console.error('ALT送信失敗:', e);
   }
+  return alt;
 }
-// ─────────────────────────────────────────────────────────
+
+function goHome() {
+  window.location.href = TRAIL_PLAYER
+    ? 'https://trail-game-pro-3-2.onrender.com'
+    : location.href.split('?')[0];
+}
 
 // === UTIL ===
 function ri(a,b){return~~(Math.random()*(b-a+1))+a;}
@@ -395,54 +404,15 @@ function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.re
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=ri(0,i);[a[i],a[j]]=[a[j],a[i]];}return a;}
 function updAlt(){E('aT').textContent=S.alt;}
 
-// === TRAIL SDK INIT & PIN AUTH ===
+// === PLAYER BADGE ===
 function showPlayerBadge(name) {
   const badge = E('playerBadge');
   badge.textContent = name;
   badge.classList.remove('hide');
 }
-(function initTrailSDK() {
-  try {
-    if (typeof TrailSDK === 'function') {
-      sdk = TrailSDK({ gameId: 4, tenantSlug: "trail" });
-    }
-  } catch (e) { sdk = null; }
-})();
-(async function handleAuth() {
-  const params = new URLSearchParams(location.search);
-  const token = params.get('token');
-  if (token) {
-    E('pinScreen').classList.add('hide');
-    try {
-      if (sdk) {
-        trailPlayerName = await sdk.getPlayerName();
-        if (trailPlayerName) showPlayerBadge(trailPlayerName);
-      }
-    } catch (e) { /* fallback */ }
-    return;
-  }
-  try {
-    if (typeof TrailAuth === 'function' && sdk) {
-      TrailAuth(E('pinScreen'), {
-        gameId: 4,
-        tenantSlug: "trail",
-        onSuccess: async function() {
-          E('pinScreen').classList.add('hide');
-          try {
-            trailPlayerName = await sdk.getPlayerName();
-            if (trailPlayerName) showPlayerBadge(trailPlayerName);
-          } catch (e) { /* fallback */ }
-        },
-        onError: function() {
-          E('pinScreen').classList.add('hide');
-        }
-      });
-    } else {
-      E('pinScreen').classList.add('hide');
-    }
-  } catch (e) {
-    E('pinScreen').classList.add('hide');
-  }
+(function initPlayer() {
+  E('pinScreen').classList.add('hide');
+  if (TRAIL_PLAYER) showPlayerBadge(TRAIL_PLAYER);
 })();
 
 // === BUBBLES ===
@@ -603,7 +573,6 @@ function cleanBoss(){
 function startG(idx,diffLv){
   if(diffLv===undefined)diffLv=2;
   cleanBoss();
-  try { if (sdk) sdk.startSession(); } catch (e) { /* fallback */ }
   const s=STG[idx];const ssms=DIFF_SSMS[diffLv],smin=DIFF_SMIN[diffLv];
   const cols=DIFF_COLS[diffLv];
   const colPans=[];for(let i=0;i<cols;i++)colPans.push([]);
@@ -743,15 +712,8 @@ async function toRes(){
   const passed=d>=CLTH;
   if(passed){S.cleared[s.key]=true;S.dc[bk]=true;}
   if(!S.best[bk]||sc>S.best[bk])S.best[bk]=sc;
-  // TRAIL SDK endSession
-  try {
-    if (sdk) {
-      const result = await sdk.endSession({ score: sc, correct: d, total: G.totalQ });
-      if (result && typeof result.alt === 'number') {
-        sdk.showAltPopup(result.alt);
-      }
-    }
-  } catch (e) { /* fallback */ }
+  // TRAIL GP3 結果送信
+  const trailAlt = await sendResultToTrail(sc);
 
   // ALT bonuses
   const details=[];
@@ -780,7 +742,7 @@ async function toRes(){
   E('rae').textContent=`+${netAlt} ALT`;
   E('rad').textContent=details.join('\n');
   E('rat').textContent=`累計: ${S.alt} ALT`;
-  if(TRAIL_PLAYER){E('rat').innerHTML+=`<br><span style="color:var(--alt);font-weight:700;font-size:15px">🪙 10 ALT を獲得！</span>`;sendResultToTrail(sc);}
+  if(TRAIL_PLAYER){E('rat').innerHTML+=`<br><span style="color:var(--alt);font-weight:700;font-size:15px">🪙 ${trailAlt} ALT を獲得！</span>`;}
   let msg='';if(G.timeLeft<=0&&passed)msg='60秒生き残った！';
   else if(G.timeLeft<=0)msg='生き残ったがクリアには足りない。再挑戦！';
   else msg=G.cols>1?`列が溢れた。${d}問撃破。`:`パネルが溢れた。${d}問撃破。`;
