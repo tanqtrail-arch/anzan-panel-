@@ -362,16 +362,8 @@ body.bm .alt-badge{background:linear-gradient(135deg,#2a0a2e,#1a0520);color:#ff6
 const TRAIL_API = 'https://trail-game-pro-3-2.onrender.com';
 const TRAIL_PLAYER = new URLSearchParams(location.search).get('player') || null;
 
-function calcAlt(score) {
-  if (score >= 1000) return 30;
-  if (score >= 500)  return 20;
-  if (score >= 100)  return 10;
-  return 5;
-}
-
-async function sendResultToTrail(score) {
+async function sendResultToTrail(score, alt) {
   if (!TRAIL_PLAYER) return 0;
-  const alt = calcAlt(score);
   try {
     await fetch(`${TRAIL_API}/api/external/game-result`, {
       method: 'POST',
@@ -712,9 +704,6 @@ async function toRes(){
   const passed=d>=CLTH;
   if(passed){S.cleared[s.key]=true;S.dc[bk]=true;}
   if(!S.best[bk]||sc>S.best[bk])S.best[bk]=sc;
-  // TRAIL GP3 結果送信
-  const trailAlt = await sendResultToTrail(sc);
-
   // ALT bonuses
   const details=[];
   details.push(`正解報酬: +${G.altEarned} ALT`);
@@ -724,6 +713,9 @@ async function toRes(){
   const isFirst=passed&&!S.fc[bk];
   if(isFirst){bonus+=8;details.push(`🎉 初クリアボーナス: +8 ALT`);S.fc[bk]=true;}
   const netAlt=Math.max(0,G.altEarned-G.altLost+bonus);
+
+  // TRAIL GP3 結果送信
+  const trailAlt = await sendResultToTrail(sc, netAlt);
   details.push(`スコア: ${sc}pt`);
   S.alt+=netAlt;
   updAlt();
