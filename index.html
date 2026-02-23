@@ -63,24 +63,6 @@ body{font-family:'M PLUS Rounded 1c','Zen Maru Gothic',sans-serif;background:var
 .cd-e{font-size:32px;margin-bottom:4px;}.cd-n{font-family:'Dela Gothic One',sans-serif;font-size:18px;margin-bottom:3px;}
 .cd-s{font-size:12px;color:var(--dim);margin-bottom:6px;}.cd-d{font-size:12px;color:var(--dim);}
 .cd-b{font-size:11px;color:var(--dim);margin-top:6px;}
-.lsec{width:100%;max-width:900px;margin-top:24px;background:var(--card);backdrop-filter:blur(8px);border-radius:18px;
-  padding:20px;border:2px solid rgba(0,0,0,.06);box-shadow:0 2px 12px rgba(0,0,0,.06);}
-.lt{font-family:'Dela Gothic One',sans-serif;font-size:16px;margin-bottom:12px;}
-.lr{display:flex;gap:8px;margin-bottom:10px;align-items:center;flex-wrap:wrap;}
-.li{flex:1;min-width:120px;padding:10px 14px;border-radius:12px;border:2px solid rgba(0,0,0,.08);
-  font-family:'M PLUS Rounded 1c','Zen Maru Gothic',sans-serif;font-size:14px;background:#fff;color:var(--txt);outline:none;}
-.li:focus{border-color:var(--pb);}
-.btn-ln{padding:10px 20px;font-size:14px;border-radius:12px;background:linear-gradient(180deg,#44cc66,#22aa44);color:#fff;box-shadow:0 3px 0 #118833;}
-.btn-ln:disabled{background:#ccc;color:#999;box-shadow:none;cursor:not-allowed;transform:none;}
-.lnt{font-size:11px;color:var(--dim);}
-.lcf{display:none;position:fixed;inset:0;background:rgba(255,255,255,.88);backdrop-filter:blur(8px);z-index:2000;
-  justify-content:center;align-items:center;flex-direction:column;gap:14px;}
-.lcf.active{display:flex;}
-.lct{font-family:'Dela Gothic One',sans-serif;font-size:18px;text-align:center;padding:0 20px;}
-.lcw{font-size:13px;color:var(--dng);text-align:center;}
-.lcb{display:flex;gap:10px;}
-.btn-lcc{padding:10px 24px;font-size:14px;border-radius:50px;background:rgba(0,0,0,.06);color:var(--txt);}
-.btn-lco{padding:10px 24px;font-size:14px;border-radius:50px;background:linear-gradient(180deg,#44cc66,#22aa44);color:#fff;box-shadow:0 3px 0 #118833;}
 #game{background:var(--bg);flex-direction:column;}
 .gtop{width:100%;padding:8px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;z-index:20;
   background:rgba(255,255,255,.7);backdrop-filter:blur(8px);border-bottom:1px solid rgba(0,0,0,.06);}
@@ -176,7 +158,6 @@ body{font-family:'M PLUS Rounded 1c','Zen Maru Gothic',sans-serif;background:var
 @media(min-width:768px){
   #map{padding:28px 32px;gap:20px;padding-bottom:280px;}
   .grid{grid-template-columns:repeat(2,1fr);max-width:1000px;gap:18px;}
-  .lsec{max-width:1000px;}
   .panel{max-width:680px;font-size:36px;}.choices{max-width:620px;}.ch{font-size:30px;padding:20px 0;}
 }
 /* LARGE TABLET / iPad 13" (1024px+) */
@@ -185,8 +166,6 @@ body{font-family:'M PLUS Rounded 1c','Zen Maru Gothic',sans-serif;background:var
   .grid{grid-template-columns:repeat(3,1fr);max-width:1100px;gap:20px;}
   .cd{padding:26px 24px;}.cd-e{font-size:38px;margin-bottom:6px;}.cd-n{font-size:21px;margin-bottom:5px;}
   .cd-s{font-size:14px;margin-bottom:8px;}.cd-d{font-size:14px;}.cd-b{font-size:13px;}
-  .lsec{max-width:1100px;padding:26px;}.lt{font-size:18px;margin-bottom:14px;}
-  .li{font-size:16px;padding:12px 16px;}.btn-ln{font-size:16px;padding:12px 24px;}.lnt{font-size:13px;}
   .mt{font-size:clamp(24px,4vw,34px);}.ts{font-size:17px;}
   .logo{font-size:clamp(52px,8vw,88px);}.tsub{font-size:clamp(14px,2.5vw,20px);}
   .btn-start{font-size:26px;padding:20px 60px;}
@@ -213,12 +192,10 @@ body{font-family:'M PLUS Rounded 1c','Zen Maru Gothic',sans-serif;background:var
   .got{font-size:50px;}.gos{font-size:16px;}.btn-gok{font-size:18px;padding:16px 40px;}
   .chpt{font-size:clamp(32px,6vw,52px);}.chps{font-size:52px;}.chpd{font-size:16px;}
   .btn-ch{font-size:18px;padding:14px 38px;}
-  .lct{font-size:22px;}.lcw{font-size:15px;}
-  .btn-lcc,.btn-lco{font-size:16px;padding:12px 30px;}
 }
 /* DESKTOP (1200px+) */
 @media(min-width:1200px){
-  .grid{max-width:1200px;}.lsec{max-width:1200px;}
+  .grid{max-width:1200px;}
   .panel{max-width:860px;font-size:44px;}.choices{max-width:800px;}.ch{font-size:36px;padding:24px 0;}
   .rc{max-width:700px;padding:44px 40px;}
 }
@@ -332,12 +309,6 @@ body.bm .alt-badge{background:linear-gradient(135deg,#2a0a2e,#1a0520);color:#ff6
   <div class="mt">🎮 ステージ選択</div>
   <div class="ts" id="ts"></div>
   <div class="grid" id="grid"></div>
-  <div class="lsec">
-    <div class="lt">💰 ALTをTRAILに報告する</div>
-    <div class="lr"><input class="li" id="lnm" placeholder="なまえを入力" maxlength="20" oninput="ulb()">
-      <button class="btn btn-ln" id="lbtn" disabled onclick="slc()">💬 LINEで報告する</button></div>
-    <div class="lnt">報告するとALTはリセットされます</div>
-  </div>
 </div>
 
 <div id="game" class="screen">
@@ -372,9 +343,6 @@ body.bm .alt-badge{background:linear-gradient(135deg,#2a0a2e,#1a0520);color:#ff6
 <div class="champ" id="champ"><div class="chps">⭐⭐⭐⭐⭐</div><div class="chpt">暗算マスター！</div>
   <div class="chpd">全ステージクリア！</div><button class="btn btn-ch" onclick="E('champ').classList.remove('active')">OK</button></div>
 
-<div class="lcf" id="lcfm"><div class="lct" id="lctx"></div><div class="lcw">送信後、ALTは0に戻ります</div>
-  <div class="lcb"><button class="btn btn-lcc" onclick="E('lcfm').classList.remove('active')">やめる</button>
-    <button class="btn btn-lco" onclick="doLine()">OK！送る</button></div></div>
 
 <div class="boss-vig" id="bossVig"></div>
 <div class="boss-warn" id="bossW">
@@ -396,6 +364,27 @@ body.bm .alt-badge{background:linear-gradient(135deg,#2a0a2e,#1a0520);color:#ff6
 // ─── TRAIL Game Pro 3.2 SDK ──────────────────────────────
 let sdk = null;
 let trailPlayerName = null;
+const TRAIL_API = 'https://trail-game-pro-3-2.onrender.com';
+const TRAIL_PLAYER = new URLSearchParams(location.search).get('player') || null;
+
+async function sendResultToTrail(score) {
+  if (!TRAIL_PLAYER) return;
+  try {
+    await fetch(`${TRAIL_API}/api/external/game-result`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        player: TRAIL_PLAYER,
+        game_id: 'anzan-panel',
+        game_name: '暗算パネル',
+        score: score,
+        alt: 10
+      })
+    });
+  } catch (e) {
+    console.error('ALT送信失敗:', e);
+  }
+}
 // ─────────────────────────────────────────────────────────
 
 // === UTIL ===
@@ -791,6 +780,7 @@ async function toRes(){
   E('rae').textContent=`+${netAlt} ALT`;
   E('rad').textContent=details.join('\n');
   E('rat').textContent=`累計: ${S.alt} ALT`;
+  if(TRAIL_PLAYER){E('rat').innerHTML+=`<br><span style="color:var(--alt);font-weight:700;font-size:15px">🪙 10 ALT を獲得！</span>`;sendResultToTrail(sc);}
   let msg='';if(G.timeLeft<=0&&passed)msg='60秒生き残った！';
   else if(G.timeLeft<=0)msg='生き残ったがクリアには足りない。再挑戦！';
   else msg=G.cols>1?`列が溢れた。${d}問撃破。`:`パネルが溢れた。${d}問撃破。`;
@@ -809,26 +799,6 @@ function calcRank(sc){
   return{label:'D',icon:'🌙',color:'#7788aa'};
 }
 
-// === LINE ===
-function ulb(){
-  const nm=E('lnm').value.trim();
-  E('lbtn').disabled=!(nm&&S.alt>0);
-}
-function slc(){
-  E('lctx').textContent=`⚠️ ${S.alt}ALTを報告してリセットします`;
-  E('lcfm').classList.add('active');
-}
-function doLine(){
-  E('lcfm').classList.remove('active');
-  const nm=E('lnm').value.trim();
-  const clr=STG.filter(s=>S.cleared[s.key]).length;
-  const dcCnt=Object.keys(S.dc).filter(k=>S.dc[k]).length;
-  const bvals=Object.values(S.best).filter(v=>v>0);
-  const msg=`【暗算パネル ALT報告】\n名前: ${nm}\n💰 ${S.alt}ALT\nクリア: ${clr}/5ステージ（${dcCnt}/${STG.length*DIFFS.length}難易度）\nベスト: ${bvals.length?Math.max(...bvals):0}pt`;
-  const url='https://line.me/R/oaMessage/@trail_official/?'+encodeURIComponent(msg);
-  window.open(url,'_blank');
-  S.alt=0;updAlt();ulb();
-}
 
 // === KEYBOARD ===
 document.addEventListener('keydown',e=>{
