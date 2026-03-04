@@ -131,9 +131,10 @@
 
   /* Panel field */
   .g-panels{
-    flex:1;width:100%;position:relative;overflow:hidden;
+    flex:1;width:100%;position:relative;overflow-y:auto;
     display:flex;flex-direction:column-reverse;
     align-items:center;padding:8px 10px;gap:6px;
+    -webkit-overflow-scrolling:touch;
   }
 
   /* Panel tile */
@@ -190,6 +191,22 @@
     border:1px solid rgba(68,170,255,.3);font-weight:700;
   }
   .btn-quit{padding:8px 14px;font-size:11px;border-radius:20px;background:rgba(0,0,0,.04);color:var(--dim);}
+
+  .g-question-display{
+    text-align:center;margin-bottom:8px;
+    padding:10px 16px;border-radius:14px;
+    background:linear-gradient(135deg,rgba(68,170,255,.12),rgba(170,102,255,.12));
+    border:2px solid rgba(68,170,255,.3);
+    max-width:440px;margin-left:auto;margin-right:auto;
+    animation:questionPop .25s ease;
+  }
+  .g-question-display .q-label{font-size:10px;color:var(--dim);letter-spacing:2px;margin-bottom:2px;}
+  .g-question-display .q-text{
+    font-family:'Dela Gothic One',sans-serif;font-size:clamp(24px,7vw,36px);
+    color:var(--p-blue);letter-spacing:3px;
+    text-shadow:0 2px 8px rgba(68,170,255,.2);
+  }
+  @keyframes questionPop{0%{transform:scale(.9);opacity:0;}100%{transform:scale(1);opacity:1;}}
 
   .choices{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;max-width:440px;margin:0 auto;}
 
@@ -250,6 +267,34 @@
   .champ-s{font-size:14px;color:var(--dim);text-align:center;}
   .btn-ch{padding:12px 32px;font-size:16px;background:linear-gradient(180deg,var(--p-yellow),#ddaa00);color:#554400;border-radius:50px;box-shadow:0 3px 0 #aa8800;}
 
+  /* Difficulty badge */
+  .cd-diff{
+    display:inline-block;font-size:10px;font-weight:900;padding:2px 8px;border-radius:10px;
+    margin-top:6px;letter-spacing:1px;
+  }
+  .cd-diff.diff-1{background:rgba(68,221,119,.15);color:#22aa55;}
+  .cd-diff.diff-2{background:rgba(68,170,255,.15);color:#2288dd;}
+  .cd-diff.diff-3{background:rgba(255,204,34,.15);color:#aa8800;}
+  .cd-diff.diff-4{background:rgba(255,136,68,.15);color:#cc5500;}
+  .cd-diff.diff-5{background:rgba(255,51,85,.15);color:#cc2244;}
+
+  /* Practice mode */
+  .mode-btns{display:flex;gap:10px;justify-content:center;margin-bottom:4px;}
+  .btn-mode{
+    padding:10px 24px;font-size:14px;border-radius:50px;font-weight:900;
+    border:2px solid rgba(0,0,0,.08);cursor:pointer;transition:all .15s;
+  }
+  .btn-mode.active-mode{border-color:var(--p-blue);background:rgba(68,170,255,.1);color:var(--p-blue);}
+  .btn-mode-battle{background:linear-gradient(180deg,#ff8899,#ff5577);color:#fff;border-color:transparent;}
+  .btn-mode-practice{background:rgba(0,0,0,.04);color:var(--txt);}
+
+  /* Practice game tweaks */
+  .g-practice-banner{
+    text-align:center;padding:6px;background:rgba(68,170,255,.08);
+    font-size:12px;color:var(--p-blue);font-weight:700;letter-spacing:1px;
+    border-bottom:1px solid rgba(68,170,255,.15);flex-shrink:0;width:100%;
+  }
+
   @media(max-width:600px){.grid{grid-template-columns:1fr;}}
 </style>
 </head>
@@ -272,6 +317,10 @@
 <div id="map" class="screen">
   <div class="mt">🎮 ステージ選択</div>
   <div class="ts" id="ts"><span class="si">⭐</span> 0 / 5</div>
+  <div class="mode-btns">
+    <button class="btn btn-mode btn-mode-battle active-mode" id="modeBattle" onclick="setMode('battle')">⚔️ バトル</button>
+    <button class="btn btn-mode btn-mode-practice" id="modePractice" onclick="setMode('practice')">📝 練習</button>
+  </div>
   <div class="grid" id="grid"></div>
 </div>
 
@@ -286,12 +335,17 @@
     </div>
   </div>
   <div class="g-timer-bar"><div class="g-timer-fill" id="gtf" style="width:100%"></div></div>
-  <div class="g-danger-zone"><div class="g-danger-line"></div><div class="g-danger-label">▼ 7枚でOUT</div></div>
+  <div class="g-practice-banner" id="pracBanner" style="display:none">📝 練習モード — タイマーなし・自由にパネルを選んで解こう</div>
+  <div class="g-danger-zone" id="dangerZone"><div class="g-danger-line"></div><div class="g-danger-label">▼ 7枚でOUT</div></div>
   <div class="g-panels" id="gp"></div>
   <div class="g-bottom">
     <div class="g-spawn-row">
-      <button class="btn btn-spawn" onclick="manualSpawn()">＋ パネル追加</button>
+      <button class="btn btn-spawn" id="btnSpawn" onclick="manualSpawn()">＋ パネル追加</button>
       <button class="btn btn-quit" onclick="quitGame()">やめる</button>
+    </div>
+    <div class="g-question-display" id="qDisp" style="display:none">
+      <div class="q-label">もんだい</div>
+      <div class="q-text" id="qText"></div>
     </div>
     <div class="choices" id="choices"></div>
   </div>
@@ -381,24 +435,24 @@ for(let i=0;i<5;i++) makeBubble();
 
 // ===== STAGES =====
 const STAGES=[
-  {key:'kuku',name:'九九',emoji:'🔴',sub:'1ケタ × 1ケタ',desc:'基本のかけ算',color:'#ff5577',
+  {key:'kuku',name:'九九',emoji:'🔴',sub:'1ケタ × 1ケタ',desc:'基本のかけ算',color:'#ff5577',diff:1,diffLabel:'★☆☆☆☆',
     gen:()=>{const a=ri(2,9),b=ri(2,9);return{text:`${a} × ${b}`,ans:a*b};}},
-  {key:'big',name:'×10のかけ算',emoji:'🟠',sub:'大きい数のかけ算',desc:'10・100の位のかけ算',color:'#ff8844',
+  {key:'big',name:'×10のかけ算',emoji:'🟠',sub:'大きい数のかけ算',desc:'10・100の位のかけ算',color:'#ff8844',diff:2,diffLabel:'★★☆☆☆',
     gen:()=>{const p=[
       ()=>{const a=rc([10,20,30,40,50,60,70,80,90]),b=ri(2,9);return{text:`${a}×${b}`,ans:a*b};},
       ()=>{const a=rc([100,200,300,400,500]),b=ri(2,9);return{text:`${a}×${b}`,ans:a*b};},
       ()=>{const a=ri(2,9),b=rc([11,12,13,14,15]);return{text:`${a}×${b}`,ans:a*b};},
       ()=>{const a=rc([20,30,40,50]),b=rc([20,30,40,50]);return{text:`${a}×${b}`,ans:a*b};}
     ];return rc(p)();}},
-  {key:'div',name:'わり算',emoji:'🟢',sub:'あまりなしのわり算',desc:'わり切れるわり算',color:'#44dd77',
+  {key:'div',name:'わり算',emoji:'🟢',sub:'あまりなしのわり算',desc:'わり切れるわり算',color:'#44dd77',diff:2,diffLabel:'★★☆☆☆',
     gen:()=>{const b=ri(2,9),c=ri(2,12),a=b*c;return{text:`${a} ÷ ${b}`,ans:c};}},
-  {key:'rev',name:'逆算・穴うめ',emoji:'🔵',sub:'□を求めよう',desc:'かけ算・わり算の穴うめ',color:'#44aaff',
+  {key:'rev',name:'逆算・穴うめ',emoji:'🔵',sub:'□を求めよう',desc:'かけ算・わり算の穴うめ',color:'#44aaff',diff:3,diffLabel:'★★★☆☆',
     gen:()=>{const t=ri(0,3);
       if(t===0){const a=ri(2,9),b=ri(2,9);return{text:`□×${b}=${a*b}`,ans:a};}
       if(t===1){const a=ri(2,9),b=ri(2,9);return{text:`${a}×□=${a*b}`,ans:b};}
       if(t===2){const b=ri(2,9),c=ri(2,12);return{text:`${b*c}÷□=${c}`,ans:b};}
       const b=ri(2,9),c=ri(2,9);return{text:`□÷${b}=${c}`,ans:b*c};}},
-  {key:'mix',name:'総合ミックス',emoji:'🟣',sub:'全タイプ混合',desc:'ランダム出題',color:'#aa66ff',
+  {key:'mix',name:'総合ミックス',emoji:'🟣',sub:'全タイプ混合',desc:'ランダム出題',color:'#aa66ff',diff:4,diffLabel:'★★★★☆',
     gen:()=>rc([STAGES[0].gen,STAGES[1].gen,STAGES[2].gen,STAGES[3].gen])()}
 ];
 
@@ -410,6 +464,7 @@ const PANEL_COLORS=6;
 let S={cleared:{},best:{}};
 let G=null;
 let altEarned=0; // 🆕 ALT獲得数追跡
+let gameMode='battle'; // 'battle' or 'practice'
 
 function ri(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
 function rc(a){return a[Math.floor(Math.random()*a.length)];}
@@ -432,14 +487,28 @@ function makeChoices(ans){
   return shuffle([...set]);
 }
 
+function setMode(m){
+  gameMode=m;
+  E('modeBattle').className='btn btn-mode btn-mode-battle'+(m==='battle'?' active-mode':'');
+  E('modePractice').className='btn btn-mode btn-mode-practice'+(m==='practice'?' active-mode':'');
+  renderGrid();
+}
+
+const DIFF_NAMES=['','かんたん','ふつう','ちょいムズ','むずかしい','超むずい'];
+
 function showMap(){
-  show('map');const g=E('grid');g.innerHTML='';let stars=0;
+  show('map');renderGrid();
+}
+
+function renderGrid(){
+  const g=E('grid');g.innerHTML='';let stars=0;
   STAGES.forEach((s,i)=>{
     if(S.cleared[s.key])stars++;
     const d=document.createElement('div');d.className='cd'+(S.cleared[s.key]?' cl':'');d.dataset.i=i;
-    d.onclick=()=>startGame(i);
+    d.onclick=()=>{if(gameMode==='practice')startPractice(i);else startGame(i);};
     d.innerHTML=`<div class="cd-e">${s.emoji}</div><div class="cd-n" style="color:${s.color}">${s.name}</div>
       <div class="cd-s">${s.sub}</div><div class="cd-d">${s.desc}</div>
+      <div class="cd-diff diff-${s.diff}">${s.diffLabel} ${DIFF_NAMES[s.diff]}</div>
       ${S.best[s.key]?`<div class="cd-b">ベスト: ${S.best[s.key]}pt</div>`:''}`;
     g.appendChild(d);
   });
@@ -451,13 +520,40 @@ function startGame(idx){
   altEarned=0; // 🆕 ALTリセット
   E('altEarnedDisplay').style.display='none'; // 🆕
   G={idx,stage:s,panels:[],selectedId:null,score:0,streak:0,maxStreak:0,destroyed:0,
-    timeLeft:GAME_TIME,spawnInterval:SPAWN_START,spawnTimer:null,clockTimer:null,nextId:0,ended:false,colorIdx:0};
+    timeLeft:GAME_TIME,spawnInterval:SPAWN_START,spawnTimer:null,clockTimer:null,nextId:0,ended:false,colorIdx:0,practice:false};
   show('game');
   E('gi').textContent=`${s.emoji} ${s.name}`;E('gi').style.color=s.color;
-  E('gp').innerHTML='';E('gsc').textContent='0';E('gpc').textContent='0';
+  E('gp').innerHTML='';E('gsc').textContent='0';E('gpc').textContent='0';E('qDisp').style.display='none';
+  E('pracBanner').style.display='none';E('dangerZone').style.display='';E('btnSpawn').style.display='';
   E('gt').textContent=GAME_TIME;E('gtf').style.width='100%';E('gtf').className='g-timer-fill';
   E('goOv').classList.remove('active');E('choices').innerHTML='';
   G.clockTimer=setInterval(clockTick,1000);spawnPanel();scheduleSpawn();
+}
+
+function startPractice(idx){
+  const s=STAGES[idx];
+  altEarned=0;
+  E('altEarnedDisplay').style.display='none';
+  G={idx,stage:s,panels:[],selectedId:null,score:0,streak:0,maxStreak:0,destroyed:0,
+    timeLeft:9999,spawnInterval:9999999,spawnTimer:null,clockTimer:null,nextId:0,ended:false,colorIdx:0,practice:true};
+  show('game');
+  E('gi').textContent=`📝 ${s.name}（練習）`;E('gi').style.color=s.color;
+  E('gp').innerHTML='';E('gsc').textContent='0';E('gpc').textContent='0';E('qDisp').style.display='none';
+  E('gt').textContent='--';E('gtf').style.width='100%';E('gtf').className='g-timer-fill';
+  E('goOv').classList.remove('active');E('choices').innerHTML='';
+  E('pracBanner').style.display='block';E('dangerZone').style.display='none';E('btnSpawn').style.display='none';
+  // Spawn 7 panels
+  for(let i=0;i<MAX_PANELS;i++) spawnPracticePanel();
+}
+
+function spawnPracticePanel(){
+  if(!G||G.ended)return;const q=G.stage.gen();const id=G.nextId++;
+  const choices=makeChoices(q.ans);const ci=G.colorIdx%PANEL_COLORS;G.colorIdx++;
+  const panel={id,text:q.text,ans:q.ans,choices,el:null,done:false};
+  const el=document.createElement('div');el.className=`panel pc${ci}`;el.dataset.pid=id;
+  el.textContent=q.text;el.onclick=()=>selectPanel(id);panel.el=el;
+  G.panels.push(panel);E('gp').appendChild(el);updatePanelCount();
+  if(G.panels.length===MAX_PANELS&&!G.selectedId)autoSelect();
 }
 
 function clockTick(){
@@ -481,7 +577,7 @@ function spawnPanel(){
   const el=document.createElement('div');el.className=`panel pc${ci}`;el.dataset.pid=id;
   el.textContent=q.text;el.onclick=()=>selectPanel(id);panel.el=el;
   G.panels.push(panel);E('gp').appendChild(el);updatePanelCount();autoSelect();
-  if(G.panels.length>=MAX_PANELS)endGame(false);
+  if(!G.practice&&G.panels.length>=MAX_PANELS)endGame(false);
 }
 
 function manualSpawn(){if(!G||G.ended||G.panels.length>=MAX_PANELS-1)return;spawnPanel();}
@@ -497,6 +593,8 @@ function updatePanelCount(){if(G)E('gpc').textContent=G.panels.length;}
 
 function renderChoices(panel){
   const w=E('choices');w.innerHTML='';
+  // Show question prominently
+  E('qDisp').style.display='block';E('qText').textContent=panel.text;
   panel.choices.forEach(val=>{const b=document.createElement('button');b.className='ch';b.textContent=val;
     b.onclick=()=>pickChoice(panel,val,b);w.appendChild(b);});
 }
@@ -512,12 +610,16 @@ function pickChoice(panel,val,btn){
     const altGain=G.streak>=FEVER_AT?2:1;TrailNav.earnAlt(altGain,'正解');altEarned+=altGain;
     updateBubbleIntensity();
     const idx=G.panels.findIndex(x=>x.id===panel.id);if(idx>=0)G.panels.splice(idx,1);
-    updatePanelCount();if(G.panels.length>0){autoSelect();}else{spawnPanel();}
-    setTimeout(()=>{panel.el.remove();},250);
+    updatePanelCount();
+    setTimeout(()=>{panel.el.remove();
+      if(G&&!G.ended){
+        if(G.practice){spawnPracticePanel();autoSelect();}
+        else if(G.panels.length>0){autoSelect();}else{spawnPanel();}
+      }
+    },250);
   } else {
     G.streak=0;
-    G.timeLeft=Math.max(0,G.timeLeft-2);
-    E('gt').textContent=Math.max(0,G.timeLeft);
+    if(!G.practice){G.timeLeft=Math.max(0,G.timeLeft-2);E('gt').textContent=Math.max(0,G.timeLeft);}
     btn.classList.add('wrong-flash');panel.el.classList.add('shake');
     updateBubbleIntensity();
     setTimeout(()=>{btn.classList.remove('wrong-flash');panel.el.classList.remove('shake');},250);
