@@ -634,6 +634,7 @@ function endGame(survived){
 
 async function goToResult(){
   await TrailNav.flushAltWithRetry(); // 🆕 ALT送信
+  DarwinBridge.stageClear({score: G.score, correct: G.destroyed, total: G.destroyed + (MAX_PANELS - G.panels.length)});
   E('goOv').classList.remove('active');const s=G.stage;const passed=G.destroyed>=CLEAR_THRESHOLD;
   if(passed)S.cleared[s.key]=true;if(!S.best[s.key]||G.score>S.best[s.key])S.best[s.key]=G.score;save();
   show('result');const rank=calcRank(G.score);
@@ -653,15 +654,7 @@ async function goToResult(){
 function quitGame(){if(!G)return;if(confirm('マップに戻る？')){G.ended=true;clearInterval(G.clockTimer);clearTimeout(G.spawnTimer);TrailNav.flushAltWithRetry();showMap();}} // 🆕 quit時もALT送信
 
 // 🆕 TRAIL共通ナビ用: ゲームホームに戻る
-window.showGameHome=function(){
-  if(G&&!G.ended){
-    if(!confirm('ゲームを中断してホームに戻りますか？'))return;
-    G.ended=true;clearInterval(G.clockTimer);clearTimeout(G.spawnTimer);
-    TrailNav.flushAltWithRetry();
-  }
-  show('title');
-  TrailNav.showNav();
-};
+window.showGameHome=function(){ DarwinBridge.exit(); };
 function retry(){if(G)startGame(G.idx);}
 
 function calcRank(score){
@@ -685,13 +678,7 @@ load();
 <!-- ===== 🆕 TRAIL共通ナビ ===== -->
 <script src="trail-nav.js"></script>
 <script>
-TrailNav.init({
-  gameName: '暗算パネル',
-  gameEmoji: '🧮',
-  gameHomeId: 'title',
-  tgp32Url: 'https://trail-game-pro-3-2.onrender.com',
-  apiBase:  'https://trail-game-pro-3-2.onrender.com/api',
-});
+DarwinBridge.ready();
 </script>
 </body>
 </html>
